@@ -178,59 +178,34 @@ public class BeanCrumber extends AbstractProcessor {
 	
 	// create anonymous inner class that extends ReflectionParser and implements method getElements();
 	private ReflectionParser createReflectionParser(final Collection<String> referencedClassNames) {
-//		try {
-			//TODO move it to ReflectionParser
-			final Map<String, Class<?>> primitives = new HashMap<String, Class<?>>();
-			primitives.put("short", short.class);
-			primitives.put("int", int.class);
-			primitives.put("long", long.class);
-			primitives.put("byte", byte.class);
-			primitives.put("boolean", boolean.class);
-			primitives.put("float", float.class);
-			primitives.put("double", double.class);
-			
-			
-			ReflectionParser parser = new ReflectionParser() {
-				@Override
-				protected Set<Class<?>> getElements() {
-					if (referencedClassNames == null) {
-						return Collections.emptySet();
-					}
-					
-					Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
-					for (String className : referencedClassNames) {
-						Class<?> clazz;
-						try {
-							clazz = primitives.get(className);
-							if (clazz == null) {
-								clazz = projectClassLoader.loadClass(className);
-							}
-							classes.add(clazz);
-						} catch (ClassNotFoundException e) {
-							e.printStackTrace();
-							processingEnv.getMessager().printMessage(Kind.WARNING, e.getMessage());
-						}
-					}
-					return classes;
+		ReflectionParser parser = new ReflectionParser() {
+			@Override
+			protected Set<Class<?>> getElements() {
+				if (referencedClassNames == null) {
+					return Collections.emptySet();
 				}
-			};
-			
-			parser.setMetadata(metadata);
-			
-			return parser;
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//			processingEnv.getMessager().printMessage(Kind.ERROR, e.getMessage());
-//
-//			// There is no reason to continue. The dummy instance of ReflectionParser
-//			// is returned here to simplify code that calls this method and to avoid NPE.  
-//			return new ReflectionParser() {
-//				@Override
-//				protected Set<? extends Class<?>> getElements() {
-//					return Collections.emptySet();
-//				}
-//			};
-//		}
+				
+				Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+				for (String className : referencedClassNames) {
+					Class<?> clazz;
+					try {
+						clazz = getPrimitiveClassByName(className);
+						if (clazz == null) {
+							clazz = projectClassLoader.loadClass(className);
+						}
+						classes.add(clazz);
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+						processingEnv.getMessager().printMessage(Kind.WARNING, e.getMessage());
+					}
+				}
+				return classes;
+			}
+		};
+		
+		parser.setMetadata(metadata);
+		
+		return parser;
 	}
 	
 	//TODO: get full project's classpath

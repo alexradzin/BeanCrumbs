@@ -15,6 +15,9 @@
 	</target>
 
 	<target name="compile" depends="init" description="compile the source " >
+		<copy todir="${build}/META-INF">
+			<fileset dir="${src}/META-INF"/>
+		</copy>
 		<!-- Compile the java code from ${src} into ${build} -->
 		<javac srcdir="${src}" destdir="${build}" includeantruntime="false" classpath="../BeanCrumbsProcessor/target/classes/" includes="com/beanpath/poc/*"/>
 		<!-- 
