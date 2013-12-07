@@ -1,0 +1,1 @@
+javac -cp ..\classes;..\..\BeanCrumbsProcessor\target\classes -d ..\classes com/beanpath/poc/*.java
