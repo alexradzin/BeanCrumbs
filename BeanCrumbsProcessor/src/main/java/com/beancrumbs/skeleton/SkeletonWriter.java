@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import com.beancrumbs.processor.BeanMetadata;
 import com.beancrumbs.processor.BeanProperty;
@@ -16,6 +17,8 @@ import com.beancrumbs.processor.BeansMetadata;
 import com.beancrumbs.processor.CrumbsWay;
 
 public class SkeletonWriter implements CrumbsWay {
+	private final static Logger logger = Logger.getLogger(SkeletonWriter.class .getName()); 
+	
 	private final static String ground = "$";
 	private final static Set<String> javaKeywords = new HashSet<String>(Arrays.asList(
 			new String[] {
@@ -76,7 +79,7 @@ public class SkeletonWriter implements CrumbsWay {
 
 	@Override
 	public void strew(String name, BeansMetadata data, OutputStream out) {
-		System.out.println("strew: " + data);
+		logger.info("Writing skeleton: " + name + " for bean " + data);
 		PrintWriter pw = new PrintWriter(out);
 		
 

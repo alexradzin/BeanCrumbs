@@ -3,26 +3,22 @@ package com.beancrumbs.processor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -40,9 +36,10 @@ import javax.tools.StandardLocation;
 
 
 @SupportedAnnotationTypes("*")
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedOptions({Options.BEANCRUMBS_DIR_OPTION, Options.BEANCRUMBS_LOG_OPTION, Options.BEANCRUMBS_LOG_LEVEL_OPTION, Options.BEANCRUMBS_ENABLED_OPTION})
 public class BeanCrumber extends AbstractProcessor {
+	private final static Logger logger = Logger.getLogger(BeanCrumber.class .getName()); 
 	private final static String CLASS_ANNOTATION_PROP = "class.annontation";
 	private static enum Config {
 		PROPERTIES,
@@ -66,6 +63,18 @@ public class BeanCrumber extends AbstractProcessor {
 	private ClassLoader projectClassLoader;
 	
 	public BeanCrumber() {
+		final String logFileConfigPropertyName = "java.util.logging.config.file";
+		String logFileConfigPropertyValue = System.getProperty(logFileConfigPropertyName);
+		
+		if (logFileConfigPropertyValue == null) {
+			File cwd = new File(".");
+			File logProps = new File(cwd, "logging.properties");
+			if (logProps.exists()) {
+				logger.info("Log is configured using " + logProps.getPath());
+				System.setProperty(logFileConfigPropertyName, logProps.getPath());
+			}
+		}
+		
 	}
 	
     @Override
@@ -90,16 +99,13 @@ public class BeanCrumber extends AbstractProcessor {
 			return false;
 		}
 
-		log("Starting processing");
+		logger.fine("Starting processing");
 		for (CrumbsWay way : getWays()) {
-			log("Go on way " + way);
+			logger.fine("Go on way " + way);
 			
 			Properties props = null;
-			Collection<String> classNames;
 			try {
 				props = getConfigurationProperties(getConfiguration(way, Config.PROPERTIES));
-				classNames = getIndex(getConfiguration(way, Config.INDEX));
-				System.out.println("Index: " + classNames);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				processingEnv.getMessager().printMessage(Kind.ERROR,
@@ -111,7 +117,7 @@ public class BeanCrumber extends AbstractProcessor {
 			Collection<Class<? extends Annotation>> markers = getMarkers(props, way);
 			if (markers != null) {
 				for (Class<? extends Annotation> marker : markers) {
-					log("Marker " + marker);
+					logger.fine("Handling Marker annotation " + marker);
 					createProcessor(roundEnv, marker).handleTypes(way);
 				}
 			}
@@ -195,7 +201,6 @@ public class BeanCrumber extends AbstractProcessor {
 						}
 						classes.add(clazz);
 					} catch (ClassNotFoundException e) {
-						e.printStackTrace();
 						processingEnv.getMessager().printMessage(Kind.WARNING, e.getMessage());
 					}
 				}
@@ -212,13 +217,12 @@ public class BeanCrumber extends AbstractProcessor {
 	private ClassLoader getProjectClassLoader() throws IOException {
 		FileObject d = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "com", "dummy");
 		URL url = new File(d.toUri()).getParentFile().getParentFile().toURI().toURL();
-		System.out.println("url=" + url );
+		logger.fine("classpath URL: " + url);
 		return new URLClassLoader(new URL[] {url}, getClass().getClassLoader());
 	}
 	
 	private InputStream getConfiguration(CrumbsWay way, Config config) {
-		System.out.println("conf path=" + config.getFilePath(way) + " " + this.getClass().getResourceAsStream(config.getFilePath(way)));
-		
+		logger.fine("conf path=" + config.getFilePath(way) + " " + this.getClass().getResourceAsStream(config.getFilePath(way)));
 		return projectClassLoader.getResourceAsStream(config.getFilePath(way));
 	}
 	
@@ -235,7 +239,7 @@ public class BeanCrumber extends AbstractProcessor {
 
 	private Collection<String> getIndex(InputStream in) throws IOException {
 		if (in == null) {
-			System.out.println("index is null");
+			logger.fine("Index is null");
 			return Collections.emptyList();
 		}
 		Collection<String> classNames = new ArrayList<String>();
@@ -245,6 +249,8 @@ public class BeanCrumber extends AbstractProcessor {
 			String className = line.trim();
 			classNames.add(className);
 		}
+
+		logger.fine("Index: " + classNames);
 		
 		return classNames;
 	}
@@ -301,9 +307,8 @@ public class BeanCrumber extends AbstractProcessor {
 	 * Call class that generates code using bean meta data. 
 	 */
 	private void sprinkleBeanCrumbs(CrumbsWay way) throws IOException {
-		System.out.println("sprinkleBeanCrumbs 1, way: " + way + ", " + metadata.getBeanNames());
+		logger.fine("sprinkleBeanCrumbs way: " + way + ", for beans: " + metadata.getBeanNames());
 		for (String name : metadata.getBeanNames(way)) {
-			System.out.println("Write skeleton for class " + name);
 			String packageName = "";
 			String simpleName = name;
 			int lastDot = name.lastIndexOf('.');
@@ -312,7 +317,7 @@ public class BeanCrumber extends AbstractProcessor {
 				simpleName = name.substring(lastDot + 1); 
 			}
 
-			System.out.println("Write skeleton for class " + name + " package: " + packageName + ", simple name=" + simpleName + ": " + way.getClassName(simpleName) );
+			logger.fine("Write crumbs for class " + name + " package: " + packageName + ", simple name=" + simpleName + ": " + way.getClassName(simpleName) );
 			
 			FileObject output = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, packageName, way.getClassName(simpleName) + ".java");
 
@@ -323,8 +328,6 @@ public class BeanCrumber extends AbstractProcessor {
 			out.flush();
 			out.close();
 		}
-
-		System.out.println("sprinkleBeanCrumbs 2");
 	}
 	
 	private File getFileInSrcFolder(File fileInApt, String packageName) {
@@ -335,7 +338,7 @@ public class BeanCrumber extends AbstractProcessor {
 		for (int i = 0; i < n; i++) {
 			aptDir = aptDir.getParentFile();
 		}
-		System.out.println("aptdir: " + aptDir);
+		logger.fine("aptdir: " + aptDir);
 		File projectRootDir = aptDir.getParentFile();
 		//TODO: add discovery of source folder. Now it is hard coded to src that relevant for not-maven projects only
 		return new File(new File(projectRootDir, "src/" + packageName.replace('.', '/')), fileName);
@@ -347,40 +350,7 @@ public class BeanCrumber extends AbstractProcessor {
 		if (ways == null) {
 			ways = ServiceLoader.load(CrumbsWay.class, projectClassLoader);
 		}
-		System.out.println("ways: " + ways);
+		logger.fine("ways: " + ways);
 		return ways;
-	}
-	
-	private void log(String msg) {
-		PrintWriter writer;
-		try {
-			writer = new PrintWriter(new FileWriter(new File(new File(System.getProperty("java.io.tmpdir")), "beancrumbs.log"), true));
-			writer.println(new Date() + " " + msg);
-			writer.flush();
-			writer.close();
-			System.out.println(new Date() + " " + msg);
-		} catch (IOException e) {
-			processingEnv.getMessager().printMessage(Kind.ERROR, e.getMessage());
-		}
-		
-	}
-	
-	
-	public static void main(String[] args) {
-//		ServiceLoader<Processor> processors = ServiceLoader.load(Processor.class);
-//		System.out.println("processors: " + processors);
-//		for (Processor p : processors) {
-//			System.out.println("processor: " + p);
-//		}
-//		
-//		
-//		ServiceLoader<CrumbsWay> ways = ServiceLoader.load(CrumbsWay.class);
-//		System.out.println("ways: " + ways);
-//		for (CrumbsWay w : ways) {
-//			System.out.println("way: " + ways);
-//		}
-
-		System.out.println(int[].class.getSuperclass());
-		
 	}
 }

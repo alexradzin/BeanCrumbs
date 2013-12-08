@@ -25,6 +25,12 @@
 		TODO: discover the problem and try to fix it.  
 		-->
 		<javac srcdir="${src}" destdir="${build}" includeantruntime="false" classpath="../BeanCrumbsProcessor/target/classes/" includes="com/beanpath/poc/*"/>
+
+		<!-- 
+		And yet another run of compile to compile skeletons created from classes that were not annotated but 
+		were mentioned in idex file
+		-->
+                <javac srcdir="${src}" destdir="${build}" includeantruntime="false" classpath="../BeanCrumbsProcessor/target/classes/" includes="com/beanpath/poc/*"/>
 		<javac srcdir="${src}" destdir="${build}" includeantruntime="false" includes="com/beanpath/usage/*"/>
 	</target>
 

@@ -18,9 +18,6 @@ public class BeanMetadata {
 		String[] parts = splitClassName(name);
 		this.packageName = parts[0];
 		this.simpleName = parts[1];
-		
-		
-		System.out.println("BeanMetadata: " + name + " > " +  superName);
 	}
 	
 

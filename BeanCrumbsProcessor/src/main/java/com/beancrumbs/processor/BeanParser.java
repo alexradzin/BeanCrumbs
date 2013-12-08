@@ -1,13 +1,10 @@
 package com.beancrumbs.processor;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Date;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public abstract class BeanParser<E, T, M> {
+	private final static Logger logger = Logger.getLogger(BeanParser.class .getName()); 
 	private BeansMetadata metadata; 
 	
 	
@@ -24,11 +21,11 @@ public abstract class BeanParser<E, T, M> {
 
 	public void handleTypes(CrumbsWay way) {
 		Set<? extends T> elements = getTypes();
-		log("handling types " + elements);
+		logger.fine("handling types " + elements);
 		for (T e : elements) {
-			log("handling type " + e + " by " + way);
+			logger.finer("handling type " + e + " by " + way);
 			handleType(e, way);
-			log("type is handled " + e);
+			logger.finer("type is handled " + e);
 		}
 	}
 
@@ -56,7 +53,7 @@ public abstract class BeanParser<E, T, M> {
 			prop.setReadable(true);
 			prop.setTypeName(propertyTypeName);
 			metadata.addBeanProperty(typeName, getSuperTypeName(type), prop, way);
-			System.out.println("addBeanProperty(" + typeName + ",..., " + prop + ",...");
+			logger.fine("addBeanProperty(" + typeName + ",..., " + prop + ",...");
 		}
 	}
 	
@@ -70,19 +67,4 @@ public abstract class BeanParser<E, T, M> {
 	protected abstract boolean isVoid(M method);
 	protected abstract String[] getMethodParemeterTypes(M method);
 	protected abstract String getMethodReturnType(M method);
-	
-	
-	protected void log(String msg) {
-		PrintWriter writer;
-		try {
-			writer = new PrintWriter(new FileWriter(new File(new File(System.getProperty("java.io.tmpdir")), "beancrumbs.log"), true));
-			writer.println(new Date() + " " + msg);
-			writer.flush();
-			writer.close();
-			System.out.println(new Date() + " " + msg);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
 }

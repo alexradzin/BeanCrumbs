@@ -9,13 +9,6 @@ import static com.beanpath.poc.PersonSkeleton.home;
 
 
 public class SceletonUsage {
-	public static void main(String[] args) {
-		String streetPath = home.apartment;
-		System.out.println(streetPath);
-		
-		
-	}
-	
 	@XmlElement(name = firstName)
 	public String getXXX() {
 		return null;

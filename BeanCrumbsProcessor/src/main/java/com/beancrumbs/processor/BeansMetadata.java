@@ -38,7 +38,6 @@ public class BeansMetadata {
 			typedClassNames.put(way, typedClasses);
 		}
 		typedClasses.add(className);
-		System.out.println("typedClassNames: " + typedClassNames);
 		
 
 		// the class is now defined. Remove it from list of classes that do not have definition yet. 
@@ -73,7 +72,6 @@ public class BeansMetadata {
 	}
 
 	public Collection<String> getBeanNames(CrumbsWay way) {
-		System.out.println("typedClassNames: " + typedClassNames);
 		Collection<String> result = typedClassNames.get(way); 
 		return result == null ? Collections.<String>emptyList() : result;
 	}
