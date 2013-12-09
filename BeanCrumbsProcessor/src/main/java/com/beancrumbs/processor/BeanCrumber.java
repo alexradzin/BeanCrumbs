@@ -2,6 +2,7 @@ package com.beancrumbs.processor;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,8 +14,10 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -41,6 +44,9 @@ import javax.tools.StandardLocation;
 public class BeanCrumber extends AbstractProcessor {
 	private final static Logger logger = Logger.getLogger(BeanCrumber.class .getName()); 
 	private final static String CLASS_ANNOTATION_PROP = "class.annontation";
+	private final static String GENERATED_SRC_DIR_PROP = "generated.src.dir";
+	private final static String GENERATED_SRC_PROJECT_PROP = "generated.src.project";
+	
 	private static enum Config {
 		PROPERTIES,
 		INDEX,
@@ -99,6 +105,8 @@ public class BeanCrumber extends AbstractProcessor {
 			return false;
 		}
 
+		Map<CrumbsWay, Properties> config = new HashMap<>();
+		
 		logger.fine("Starting processing");
 		for (CrumbsWay way : getWays()) {
 			logger.fine("Go on way " + way);
@@ -106,6 +114,7 @@ public class BeanCrumber extends AbstractProcessor {
 			Properties props = null;
 			try {
 				props = getConfigurationProperties(getConfiguration(way, Config.PROPERTIES));
+				config.put(way, props);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				processingEnv.getMessager().printMessage(Kind.ERROR,
@@ -130,7 +139,7 @@ public class BeanCrumber extends AbstractProcessor {
 					createReflectionParser(classNames).handleTypes(way);
 					createReflectionParser(metadata.getReferencedClassNames()).handleTypes(way);
 					createReflectionParser(getSuperClassNames()).handleTypes(way);
-					sprinkleBeanCrumbs(way);
+					sprinkleBeanCrumbs(way, config.get(way));
 				}
 			} catch (IOException ex) {
 				ex.printStackTrace();
@@ -306,8 +315,28 @@ public class BeanCrumber extends AbstractProcessor {
 	/**
 	 * Call class that generates code using bean meta data. 
 	 */
-	private void sprinkleBeanCrumbs(CrumbsWay way) throws IOException {
+	private void sprinkleBeanCrumbs(CrumbsWay way, Properties props) throws IOException {
 		logger.fine("sprinkleBeanCrumbs way: " + way + ", for beans: " + metadata.getBeanNames());
+
+		File generatedSrcDir = null;
+		File generatedSrcProjectRoot = new File(".").getCanonicalFile();
+		
+		
+		if (props != null) {
+			String generatedSrcProjectProp = props.getProperty(GENERATED_SRC_PROJECT_PROP);
+			if (generatedSrcProjectProp != null) {
+				generatedSrcProjectRoot = new File(generatedSrcProjectProp);
+			}
+			
+			String generatedSrcProp = props.getProperty(GENERATED_SRC_DIR_PROP);
+			if (generatedSrcProp != null) {
+				generatedSrcDir = new File(generatedSrcProjectRoot, generatedSrcProp);
+			} else if (generatedSrcProjectProp != null) {
+				throw new IllegalArgumentException("Source directory for generated files in extenal project must be defined explicitly. Add property " + GENERATED_SRC_DIR_PROP);
+			}
+		}
+		
+		
 		for (String name : metadata.getBeanNames(way)) {
 			String packageName = "";
 			String simpleName = name;
@@ -320,8 +349,13 @@ public class BeanCrumber extends AbstractProcessor {
 			logger.fine("Write crumbs for class " + name + " package: " + packageName + ", simple name=" + simpleName + ": " + way.getClassName(simpleName) );
 			
 			FileObject output = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, packageName, way.getClassName(simpleName) + ".java");
-
-			File srcFile = getFileInSrcFolder(new File(output.toUri()), packageName);
+			File generatedSrcFile = new File(output.toUri());
+			
+			if (generatedSrcDir == null) {
+				generatedSrcDir = findGeneratedSrcDir(generatedSrcProjectRoot, packageName, simpleName);
+			}
+			
+			File srcFile = new File(new File(generatedSrcDir, packageName.replace('.', '/')), generatedSrcFile.getName());
 			srcFile.getParentFile().mkdirs();
 			OutputStream out = new FileOutputStream(srcFile);
 			way.strew(name, metadata, out);
@@ -329,19 +363,39 @@ public class BeanCrumber extends AbstractProcessor {
 			out.close();
 		}
 	}
+
 	
-	private File getFileInSrcFolder(File fileInApt, String packageName) {
-		File aptDir = fileInApt.getParentFile();
-		String fileName = fileInApt.getName();
-		// go up through the package based directories
-		int n = "".equals(packageName) ? 0 : packageName.split("\\.").length;
-		for (int i = 0; i < n; i++) {
-			aptDir = aptDir.getParentFile();
+	private File findGeneratedSrcDir(File root, String packageName, String simpleName) {
+		return findGeneratedSrcDir(root, packageNameToPath(packageName) + "/" + simpleName + ".java");
+	}
+	
+	private String packageNameToPath(String packageName) {
+		return packageName.replace('.', '/');
+	}
+
+	private File findGeneratedSrcDir(File root, String path) {
+		if (!root.exists()) {
+			throw new IllegalArgumentException(root.getAbsolutePath() + " does not exist");
 		}
-		logger.fine("aptdir: " + aptDir);
-		File projectRootDir = aptDir.getParentFile();
-		//TODO: add discovery of source folder. Now it is hard coded to src that relevant for not-maven projects only
-		return new File(new File(projectRootDir, "src/" + packageName.replace('.', '/')), fileName);
+		if (!root.isDirectory()) {
+			throw new IllegalArgumentException(root.getAbsolutePath() + " is not a directory");
+		}		
+		
+		if (new File(root, path).exists()) {
+			return root;
+		}
+		for (File f : root.listFiles(new FileFilter() {
+			@Override
+			public boolean accept(File pathname) {
+				return pathname.isDirectory();
+			}
+		})) {
+			File res = findGeneratedSrcDir(f, path);
+			if (res != null) {
+				return res;
+			}
+		}
+		return null;
 	}
 	
 	
