@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.beancrumbs</groupId>
+	<artifactId>beancrumbs-examples</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<name>BeanCrumbsExamples</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<junit.version>4.10</junit.version>
+	</properties>
+
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<id>compile-examples</id>
+						<phase>test-compile</phase>
+						<configuration>
+							<tasks>
+								<!-- The following command does not work if JAVA_HOME is not defined 
+									correctly -->
+								<!-- <ant antfile="../BeanCrumbsExamples/BeanCumbsAnt/build.xml"/> -->
+								<exec executable="ant" dir="."/>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>clean-examples</id>
+						<phase>clean</phase>
+						<configuration>
+							<tasks>
+								<exec executable="ant" dir=".">
+									<arg value="clean"/>
+								</exec>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+
+  <modules>
+    <module>BeanCrumbsMaven</module>
+  </modules>
+</project>

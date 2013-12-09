@@ -44,5 +44,8 @@ public class BeanProperty {
 		this.setterName = setterName;
 	}
 	
-	
+	@Override
+	public String toString() {
+		return typeName + " " + name + " " + "[" + (readable ? "r" : "") +  (writable ? "w" : "") + "]";
+	}
 }

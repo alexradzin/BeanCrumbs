@@ -136,14 +136,15 @@ public class SkeletonWriterTest {
 	
 	@Parameters(name = "{3}")
 	public static Collection<Object[]> parameters() throws IOException, ClassNotFoundException {
-		final File thisProjectDir = new File("").getAbsoluteFile();
+		final File thisProjectDir = new File(".").getCanonicalFile();
 		final File parentProjectDir = thisProjectDir.getParentFile();
+		final File examplesProjectDir = new File(parentProjectDir, "BeanCrumbsExamples");
 		
 		
-		File[] testProjects = parentProjectDir.listFiles(new FileFilter() {
+		File[] testProjects = examplesProjectDir.listFiles(new FileFilter() {
 			@Override
 			public boolean accept(File pathname) {
-				return pathname.isDirectory() && !thisProjectDir.getName().equals(pathname.getName());
+				return pathname.isDirectory();
 			}
 		});
 

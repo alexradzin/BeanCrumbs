@@ -89,8 +89,8 @@
             <configuration>
               <tasks>
                 <!--  The following command does not work if JAVA_HOME is not defined correctly -->
-			    <!-- <ant antfile="../BeanCrumbsExamples/build.xml"/>-->
-				<exec executable="ant" dir="../BeanCrumbsExamples/"/>
+			    <!-- <ant antfile="../BeanCrumbsExamples/BeanCumbsAnt/build.xml"/>-->
+				<exec executable="ant" dir="../BeanCrumbsExamples/BeanCumbsAnt"/>
               </tasks>
             </configuration>
             <goals>
@@ -103,7 +103,7 @@
             <phase>clean</phase>
             <configuration>
               <tasks>
-				<exec executable="ant" dir="../BeanCrumbsExamples/">
+				<exec executable="ant" dir="../BeanCrumbsExamples/BeanCumbsAnt">
 					<arg value="clean"/>
 				</exec>
               </tasks>
@@ -116,55 +116,7 @@
           
         </executions>
       </plugin>      
-		<!-- 
-      <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.7</version>
-        <executions>
-          <execution>
-            <phase>clean</phase>
-            <configuration>
-              <tasks>
-				<exec executable="ant" dir="../BeanCrumbsExamples/">
-					<arg value="clean"/>
-				</exec>
-              </tasks>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-       -->
 
     </plugins>    
   </build>
-
-
-		<!--	
-		<plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>${org.codehaus.mojo.version}</version>
-            <executions>
-               <execution>
-                    <id>ant</id>
-                    <phase>test-compile</phase>
-                    <goals>
-                        <goal>exec</goal>
-                    </goals>
-                    <configuration>
-                        <executable>ant</executable>
-                        <arguments>
-                            <argument>compile</argument>
-                        </arguments>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
-        -->
-        
-        	
-
 </project>

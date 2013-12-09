@@ -18,6 +18,7 @@
 
 	<modules>
 		<module>BeanCrumbsProcessor</module>
+		<module>BeanCrumbsExamples</module>
 	</modules>
 
 

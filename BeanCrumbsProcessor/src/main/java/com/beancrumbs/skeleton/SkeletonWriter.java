@@ -103,6 +103,7 @@ public class SkeletonWriter implements CrumbsWay {
 
 	
 	private void writeSkeletonImpl(String name, String simpleName, int nesting, BeansMetadata data, PrintWriter pw) {
+		logger.info("Writing skeleton: " + name + ", " + simpleName);
 		String tabs = tab(nesting);
 		String propTabs = tab(nesting + 1);
 		
@@ -144,6 +145,7 @@ public class SkeletonWriter implements CrumbsWay {
 		for(Map.Entry<String, BeanProperty> entry : properties.entrySet()) {
 			String type = entry.getValue().getTypeName();
 			String fieldName = entry.getKey();
+			logger.info("Writing skeleton property: " + type + " " + fieldName);
 			
 			if (data.getBeanMetadata(type) != null) {
 				writeSkeletonImpl(type, fieldName, nesting + 1, data, pw);

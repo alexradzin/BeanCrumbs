@@ -3,17 +3,21 @@ package com.beancrumbs.processor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -21,6 +25,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -42,7 +47,6 @@ import javax.tools.StandardLocation;
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedOptions({Options.BEANCRUMBS_DIR_OPTION, Options.BEANCRUMBS_LOG_OPTION, Options.BEANCRUMBS_LOG_LEVEL_OPTION, Options.BEANCRUMBS_ENABLED_OPTION})
 public class BeanCrumber extends AbstractProcessor {
-	private final static Logger logger = Logger.getLogger(BeanCrumber.class .getName()); 
 	private final static String CLASS_ANNOTATION_PROP = "class.annontation";
 	private final static String GENERATED_SRC_DIR_PROP = "generated.src.dir";
 	private final static String GENERATED_SRC_PROJECT_PROP = "generated.src.project";
@@ -68,18 +72,44 @@ public class BeanCrumber extends AbstractProcessor {
 	private Iterable<CrumbsWay> ways = null;
 	private ClassLoader projectClassLoader;
 	
-	public BeanCrumber() {
+	
+	static {
 		final String logFileConfigPropertyName = "java.util.logging.config.file";
 		String logFileConfigPropertyValue = System.getProperty(logFileConfigPropertyName);
+		log("BeanCrumber::BeanCrumber(): logFileConfigPropertyValue=" + logFileConfigPropertyValue);
 		
 		if (logFileConfigPropertyValue == null) {
 			File cwd = new File(".");
 			File logProps = new File(cwd, "logging.properties");
+			log("BeanCrumber::BeanCrumber(): logProps=" + logProps + ", exists=" + logProps.exists() + ", " + logProps.getAbsolutePath());
 			if (logProps.exists()) {
-				logger.info("Log is configured using " + logProps.getPath());
-				System.setProperty(logFileConfigPropertyName, logProps.getPath());
+//				System.setProperty(logFileConfigPropertyName, logProps.getPath());
+				try {
+					log ("loggers before reconfiguration");
+					for (Enumeration<String> l = LogManager.getLogManager().getLoggerNames(); l.hasMoreElements(); ) {
+						log ("logger: " + l.nextElement());
+					}
+					
+					LogManager.getLogManager().readConfiguration(new FileInputStream(logProps));
+					log ("loggers after reconfiguration");
+					for (Enumeration<String> l = LogManager.getLogManager().getLoggerNames(); l.hasMoreElements(); ) {
+						log ("logger: " + l.nextElement());
+					}
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		}
+	}
+
+	private final static Logger logger = Logger.getLogger(BeanCrumber.class .getName()); 
+	
+	public BeanCrumber() {
+		log("BeanCrumber::BeanCrumber()");
+		
+		
+		
+		logger.info("BeanCrumber is created");
 		
 	}
 	
@@ -101,12 +131,14 @@ public class BeanCrumber extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations,
 			RoundEnvironment roundEnv) {
+		log("BeanCrumber::process()");
 		if (!enabled) {
 			return false;
 		}
 
 		Map<CrumbsWay, Properties> config = new HashMap<>();
 		
+		log("Starting processing");
 		logger.fine("Starting processing");
 		for (CrumbsWay way : getWays()) {
 			logger.fine("Go on way " + way);
@@ -115,7 +147,7 @@ public class BeanCrumber extends AbstractProcessor {
 			try {
 				props = getConfigurationProperties(getConfiguration(way, Config.PROPERTIES));
 				config.put(way, props);
-			} catch (Exception ex) {
+			} catch (IOException | RuntimeException ex) {
 				ex.printStackTrace();
 				processingEnv.getMessager().printMessage(Kind.ERROR,
 						ex.getMessage());
@@ -141,10 +173,9 @@ public class BeanCrumber extends AbstractProcessor {
 					createReflectionParser(getSuperClassNames()).handleTypes(way);
 					sprinkleBeanCrumbs(way, config.get(way));
 				}
-			} catch (IOException ex) {
+			} catch (IOException | RuntimeException ex) {
 				ex.printStackTrace();
-				processingEnv.getMessager().printMessage(Kind.ERROR,
-						ex.getMessage());
+				processingEnv.getMessager().printMessage(Kind.ERROR, ex.getMessage());
 			}
 		}
 		
@@ -319,20 +350,17 @@ public class BeanCrumber extends AbstractProcessor {
 		logger.fine("sprinkleBeanCrumbs way: " + way + ", for beans: " + metadata.getBeanNames());
 
 		File generatedSrcDir = null;
-		File generatedSrcProjectRoot = new File(".").getCanonicalFile();
+		File generatedSrcProjectRoot;// = new File(".").getCanonicalFile();
 		
 		
 		if (props != null) {
 			String generatedSrcProjectProp = props.getProperty(GENERATED_SRC_PROJECT_PROP);
+			String generatedSrcProp = props.getProperty(GENERATED_SRC_DIR_PROP);
 			if (generatedSrcProjectProp != null) {
 				generatedSrcProjectRoot = new File(generatedSrcProjectProp);
-			}
-			
-			String generatedSrcProp = props.getProperty(GENERATED_SRC_DIR_PROP);
-			if (generatedSrcProp != null) {
-				generatedSrcDir = new File(generatedSrcProjectRoot, generatedSrcProp);
-			} else if (generatedSrcProjectProp != null) {
-				throw new IllegalArgumentException("Source directory for generated files in extenal project must be defined explicitly. Add property " + GENERATED_SRC_DIR_PROP);
+				if (generatedSrcProp != null) {
+					generatedSrcDir = new File(generatedSrcProjectRoot, generatedSrcProp);
+				}				
 			}
 		}
 		
@@ -346,17 +374,26 @@ public class BeanCrumber extends AbstractProcessor {
 				simpleName = name.substring(lastDot + 1); 
 			}
 
-			logger.fine("Write crumbs for class " + name + " package: " + packageName + ", simple name=" + simpleName + ": " + way.getClassName(simpleName) );
-			
 			FileObject output = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, packageName, way.getClassName(simpleName) + ".java");
+			FileObject input = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, packageName, simpleName + ".java");
 			File generatedSrcFile = new File(output.toUri());
+			File originalSrcFile = new File(input.toUri());
 			
 			if (generatedSrcDir == null) {
-				generatedSrcDir = findGeneratedSrcDir(generatedSrcProjectRoot, packageName, simpleName);
+				generatedSrcDir = findGeneratedSrcDir(originalSrcFile, packageName, simpleName);
+			}
+
+			logger.fine("Source directory for generated sources is: " + generatedSrcDir);
+		
+			if (generatedSrcDir == null) {
+				throw new IllegalStateException("Cannot find directory for generated source files");
 			}
 			
 			File srcFile = new File(new File(generatedSrcDir, packageName.replace('.', '/')), generatedSrcFile.getName());
 			srcFile.getParentFile().mkdirs();
+
+			logger.fine("Write crumbs for class " + name + " package: " + packageName + ", simple name=" + simpleName + ": " + way.getClassName(simpleName) + " to " + srcFile.getAbsolutePath());
+			
 			OutputStream out = new FileOutputStream(srcFile);
 			way.strew(name, metadata, out);
 			out.flush();
@@ -365,15 +402,38 @@ public class BeanCrumber extends AbstractProcessor {
 	}
 
 	
-	private File findGeneratedSrcDir(File root, String packageName, String simpleName) {
-		return findGeneratedSrcDir(root, packageNameToPath(packageName) + "/" + simpleName + ".java");
+	private File findGeneratedSrcDir(File path, String packageName, String simpleName) {
+		return findGeneratedSrcDir(path, packageNameToPath(packageName) + "/" + simpleName + ".java");
 	}
+
 	
 	private String packageNameToPath(String packageName) {
 		return packageName.replace('.', '/');
 	}
 
-	private File findGeneratedSrcDir(File root, String path) {
+	private File findGeneratedSrcDir(File file, String path) {
+		String[] pathFragments = path.split("/");
+
+		File f = file;
+		for (int i = pathFragments.length - 1; i >= 0; i--) {
+			if (!f.getName().equals(pathFragments[i])) {
+				throw new IllegalArgumentException("Wrong path fragment# "  + i + " " + pathFragments + ": " + file + " does not match " + path);
+			}
+			f = f.getParentFile();
+		}
+		
+		for (; f != null; f = f.getParentFile()) {
+			File root = findPath(f, path);
+			if (root != null) {
+				return root;
+			}
+		}
+		
+		return null;
+	}
+
+	
+	private File findPath(File root, String path) {
 		if (!root.exists()) {
 			throw new IllegalArgumentException(root.getAbsolutePath() + " does not exist");
 		}
@@ -390,13 +450,14 @@ public class BeanCrumber extends AbstractProcessor {
 				return pathname.isDirectory();
 			}
 		})) {
-			File res = findGeneratedSrcDir(f, path);
+			File res = findPath(f, path);
 			if (res != null) {
 				return res;
 			}
 		}
 		return null;
 	}
+	
 	
 	
 	// discovers required crumb ways (from data files and annotations) and returns the list.
@@ -406,5 +467,17 @@ public class BeanCrumber extends AbstractProcessor {
 		}
 		logger.fine("ways: " + ways);
 		return ways;
+	}
+	
+	
+	private static void log(String msg) {
+		try {
+			PrintWriter writer = new PrintWriter(new FileWriter(new File("/tmp/mylog.log"), true));
+			writer.println(msg);
+			writer.flush();
+			writer.close();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.beancrumbs</groupId>
+  <artifactId>beancrumbsant</artifactId>
+  <version>1.0</version>
+  <name>BeanCrumbsAnt</name>
+  <packaging>jar</packaging>
+  <url>http://www.beancrumbs.com</url>
+
+
+   <build> 
+	<sourceDirectory>src</sourceDirectory>
+
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.3</version>
+          <configuration>
+            <source>1.7</source>
+            <target>1.7</target>
+            <optimize>true</optimize>
+            <showDeprecation>true</showDeprecation>
+            <showWarnings>true</showWarnings>
+          </configuration>
+
+
+
+    <executions>
+        <execution>
+            <phase>none</phase>
+        </execution>
+    </executions>
+	</plugin>
+      </plugins>
+    </pluginManagement>
+
+
+
+    <plugins>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+          <execution>
+          	<id>compile-examples</id>
+            <phase>test-compile</phase>
+            <configuration>
+              <tasks>
+                <!--  The following command does not work if JAVA_HOME is not defined correctly -->
+			    <!-- <ant antfile="../BeanCrumbsExamples/BeanCumbsAnt/build.xml"/>-->
+				<exec executable="ant" dir="."/>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          
+          <execution>
+          	<id>clean-examples</id>
+            <phase>clean</phase>
+            <configuration>
+              <tasks>
+				<exec executable="ant" dir=".">
+					<arg value="clean"/>
+				</exec>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          
+          
+        </executions>
+      </plugin>      
+
+    </plugins>    
+  </build>
+</project>
