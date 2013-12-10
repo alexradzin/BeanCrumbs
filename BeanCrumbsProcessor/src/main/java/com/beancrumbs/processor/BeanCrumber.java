@@ -5,23 +5,23 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -35,7 +35,9 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.FileObject;
@@ -76,25 +78,14 @@ public class BeanCrumber extends AbstractProcessor {
 	static {
 		final String logFileConfigPropertyName = "java.util.logging.config.file";
 		String logFileConfigPropertyValue = System.getProperty(logFileConfigPropertyName);
-		log("BeanCrumber::BeanCrumber(): logFileConfigPropertyValue=" + logFileConfigPropertyValue);
 		
 		if (logFileConfigPropertyValue == null) {
+			//TODO: replace CWD by the project directory. 
 			File cwd = new File(".");
 			File logProps = new File(cwd, "logging.properties");
-			log("BeanCrumber::BeanCrumber(): logProps=" + logProps + ", exists=" + logProps.exists() + ", " + logProps.getAbsolutePath());
 			if (logProps.exists()) {
-//				System.setProperty(logFileConfigPropertyName, logProps.getPath());
 				try {
-					log ("loggers before reconfiguration");
-					for (Enumeration<String> l = LogManager.getLogManager().getLoggerNames(); l.hasMoreElements(); ) {
-						log ("logger: " + l.nextElement());
-					}
-					
 					LogManager.getLogManager().readConfiguration(new FileInputStream(logProps));
-					log ("loggers after reconfiguration");
-					for (Enumeration<String> l = LogManager.getLogManager().getLoggerNames(); l.hasMoreElements(); ) {
-						log ("logger: " + l.nextElement());
-					}
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
@@ -105,12 +96,7 @@ public class BeanCrumber extends AbstractProcessor {
 	private final static Logger logger = Logger.getLogger(BeanCrumber.class .getName()); 
 	
 	public BeanCrumber() {
-		log("BeanCrumber::BeanCrumber()");
-		
-		
-		
-		logger.info("BeanCrumber is created");
-		
+		logger.info("BeanCrumber is created cwd=" + new File(".").getAbsolutePath());
 	}
 	
     @Override
@@ -131,14 +117,12 @@ public class BeanCrumber extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations,
 			RoundEnvironment roundEnv) {
-		log("BeanCrumber::process()");
 		if (!enabled) {
 			return false;
 		}
 
 		Map<CrumbsWay, Properties> config = new HashMap<>();
 		
-		log("Starting processing");
 		logger.fine("Starting processing");
 		for (CrumbsWay way : getWays()) {
 			logger.fine("Go on way " + way);
@@ -147,6 +131,7 @@ public class BeanCrumber extends AbstractProcessor {
 			try {
 				props = getConfigurationProperties(getConfiguration(way, Config.PROPERTIES));
 				config.put(way, props);
+				logger.fine("props: " + props);
 			} catch (IOException | RuntimeException ex) {
 				ex.printStackTrace();
 				processingEnv.getMessager().printMessage(Kind.ERROR,
@@ -155,11 +140,31 @@ public class BeanCrumber extends AbstractProcessor {
 			}
 			
 			
-			Collection<Class<? extends Annotation>> markers = getMarkers(props, way);
+			Map<String, Class<? extends Annotation>> markers = getMarkers(props, way);
 			if (markers != null) {
-				for (Class<? extends Annotation> marker : markers) {
-					logger.fine("Handling Marker annotation " + marker);
-					createProcessor(roundEnv, marker).handleTypes(way);
+				
+				for (Entry<String, Class<? extends Annotation>> entry : markers.entrySet()) {
+					String name = entry.getKey();
+					Class<? extends Annotation> clazz = entry.getValue();
+					logger.fine("Handling Marker annotation " + name);
+					// TODO remove code that works with annotation class. 
+					// Start working with the annotation name only.
+					// The annotation class is not always available during compilation. 
+					// For example this happens when working with maven projects in Eclipse with M2E plugin.
+					// Both implementation are not needed.
+					if (clazz != null) {
+						createProcessor(roundEnv, clazz).handleTypes(way);
+					} else {
+						createProcessor(roundEnv, name).handleTypes(way);
+					}
+				}
+					
+				
+				for (Class<? extends Annotation> marker : markers.values()) {
+					if (marker != null) {
+						logger.fine("Handling Marker annotation " + marker);
+						createProcessor(roundEnv, marker).handleTypes(way);
+					}
 				}
 			}
 		}
@@ -184,28 +189,47 @@ public class BeanCrumber extends AbstractProcessor {
 	}
 
 	
-	private Collection<Class<? extends Annotation>> getMarkers(Properties props, CrumbsWay way) {
+	private Map<String, Class<? extends Annotation>> getMarkers(Properties props, CrumbsWay way) {
 		try {
+			logger.finest("getMarkers " + props);
 			if (props != null) {
+				logger.finest("getMarkers props!=null");
 				String classAnnotationProp = props.getProperty(CLASS_ANNOTATION_PROP);
+				logger.finest("getMarkers classAnnotationProp=" + classAnnotationProp);
 				if (classAnnotationProp != null) {
-					Collection<Class<? extends Annotation>> annotationClasses = new ArrayList<Class<? extends Annotation>>();  
+					Map<String, Class<? extends Annotation>> annotationClasses = new LinkedHashMap<String, Class<? extends Annotation>>();  
 					for (String annotationClassName : classAnnotationProp.split("\\s*[,;]\\s*")) {
-						@SuppressWarnings("unchecked")
-						Class<? extends Annotation> clazz = (Class<? extends Annotation>)projectClassLoader.loadClass(annotationClassName);
-						annotationClasses.add(clazz);
+						logger.finest("getMarkers annotationClassName=" + annotationClassName);
+						Class<? extends Annotation> clazz;
+						try {
+							@SuppressWarnings("unchecked")
+							Class<? extends Annotation> c = (Class<? extends Annotation>)projectClassLoader.loadClass(annotationClassName);
+							clazz = c;
+						} catch (ClassNotFoundException e) {
+							clazz = null;
+						}
+						
+						logger.finest("getMarkers annotationClass=" + clazz);
+						annotationClasses.put(annotationClassName, clazz);
 					}
 					return annotationClasses;
 				}
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			logger.severe(ex.toString());
 			processingEnv.getMessager().printMessage(Kind.ERROR,
 					ex.getMessage());
 		}
 		
+		logger.finest("getMarkers returning default markers of " + way);
 		
-		return way.getMarkers();
+		Map<String, Class<? extends Annotation>> annotationClasses = new LinkedHashMap<String, Class<? extends Annotation>>();
+		for (Class<? extends Annotation> c : way.getMarkers()) {
+			annotationClasses.put(c.getName(), c);
+		}
+		
+		return annotationClasses;
 		
 	}
 	
@@ -216,6 +240,33 @@ public class BeanCrumber extends AbstractProcessor {
 			@Override
 			protected Set<? extends Element> getElements() {
 				return roundEnv.getElementsAnnotatedWith(marker);
+			}
+		};
+		processor.setMetadata(metadata);
+		return processor;
+	}
+
+	private BeanProcessor createProcessor(final RoundEnvironment roundEnv, final String marker) {
+		BeanProcessor processor = new BeanProcessor() {
+			@Override
+			protected Set<? extends Element> getElements() {
+				Set<Element> elements = new LinkedHashSet<>();
+				for (Element element : roundEnv.getRootElements()) {
+					for (AnnotationMirror annotation : element.getAnnotationMirrors()) {
+						if (!(element instanceof TypeElement)) {
+							continue;
+						}
+
+						Name qualifiedName = ((TypeElement) (annotation.getAnnotationType()).asElement()).getQualifiedName();
+						qualifiedName.contentEquals(marker);
+
+						if (qualifiedName.contentEquals(marker)) {
+							elements.add(element);
+						}
+					}
+				}
+
+				return elements;
 			}
 		};
 		processor.setMetadata(metadata);
@@ -261,9 +312,34 @@ public class BeanCrumber extends AbstractProcessor {
 		return new URLClassLoader(new URL[] {url}, getClass().getClassLoader());
 	}
 	
-	private InputStream getConfiguration(CrumbsWay way, Config config) {
-		logger.fine("conf path=" + config.getFilePath(way) + " " + this.getClass().getResourceAsStream(config.getFilePath(way)));
-		return projectClassLoader.getResourceAsStream(config.getFilePath(way));
+	private InputStream getConfiguration(CrumbsWay way, Config config) throws IOException {
+		String path = config.getFilePath(way);
+		
+		logger.fine("conf path=" + path + " " + this.getClass().getResourceAsStream(path) + ", " + projectClassLoader.getResourceAsStream(path));
+		
+		InputStream configIn = projectClassLoader.getResourceAsStream(config.getFilePath(way));
+		if (configIn != null) {
+			// if resource is already created, i.e. already copied from source directory we can read it as a resource 
+			return configIn;
+		}
+
+		//TODO: remove casting. Store the URL in class member. 
+		// if not, try to locate it in source directory. 
+		for (URL url : ((URLClassLoader)projectClassLoader).getURLs()) {
+			File f;
+			try {
+				f = new File(new File(url.toURI()), path);
+				File propsSrcDir = findSrcDir(f, path);
+				File propsFile = new File(propsSrcDir, path);
+				logger.fine("propsFile=" + propsFile.getAbsolutePath() + ", " + propsFile.exists());
+				return new FileInputStream(propsFile);
+			} catch (URISyntaxException e) {
+				throw new IllegalArgumentException(e);
+			}
+		}
+		
+		
+		return null;
 	}
 	
 	private Properties getConfigurationProperties(InputStream in) throws IOException {
@@ -301,7 +377,6 @@ public class BeanCrumber extends AbstractProcessor {
 		try {
 			classLoader = getProjectClassLoader();
 		} catch (IOException e) {
-			e.printStackTrace();
 			processingEnv.getMessager().printMessage(Kind.ERROR, e.getMessage());
 			return Collections.emptyList();
 		}
@@ -380,7 +455,7 @@ public class BeanCrumber extends AbstractProcessor {
 			File originalSrcFile = new File(input.toUri());
 			
 			if (generatedSrcDir == null) {
-				generatedSrcDir = findGeneratedSrcDir(originalSrcFile, packageName, simpleName);
+				generatedSrcDir = findSrcDir(originalSrcFile, packageName, simpleName);
 			}
 
 			logger.fine("Source directory for generated sources is: " + generatedSrcDir);
@@ -402,8 +477,8 @@ public class BeanCrumber extends AbstractProcessor {
 	}
 
 	
-	private File findGeneratedSrcDir(File path, String packageName, String simpleName) {
-		return findGeneratedSrcDir(path, packageNameToPath(packageName) + "/" + simpleName + ".java");
+	private File findSrcDir(File path, String packageName, String simpleName) {
+		return findSrcDir(path, packageNameToPath(packageName) + "/" + simpleName + ".java");
 	}
 
 	
@@ -411,7 +486,7 @@ public class BeanCrumber extends AbstractProcessor {
 		return packageName.replace('.', '/');
 	}
 
-	private File findGeneratedSrcDir(File file, String path) {
+	private File findSrcDir(File file, String path) {
 		String[] pathFragments = path.split("/");
 
 		File f = file;
@@ -470,14 +545,14 @@ public class BeanCrumber extends AbstractProcessor {
 	}
 	
 	
-	private static void log(String msg) {
-		try {
-			PrintWriter writer = new PrintWriter(new FileWriter(new File("/tmp/mylog.log"), true));
-			writer.println(msg);
-			writer.flush();
-			writer.close();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+//	private static void log(String msg) {
+//		try {
+//			PrintWriter writer = new PrintWriter(new FileWriter(new File("/tmp/mylog.log"), true));
+//			writer.println(msg);
+//			writer.flush();
+//			writer.close();
+//		} catch (IOException e) {
+//			throw new RuntimeException(e);
+//		}
+//	}
 }
