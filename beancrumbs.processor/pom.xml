@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.beancrumbs</groupId>
+  <artifactId>beancrumbs</artifactId>
+  <version>1.0</version>
+  <name>beancrumbs</name>
+  <packaging>jar</packaging>
+	<url>http://www.beancrumbs.com</url>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+
+	<properties>
+		<!-- Application settings -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<copyright.year>2013</copyright.year>
+		<junit.version>4.11</junit.version>
+	</properties>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.3</version>
+          <configuration>
+            <source>1.7</source>
+            <target>1.7</target>
+            <optimize>true</optimize>
+            <showDeprecation>true</showDeprecation>
+            <showWarnings>true</showWarnings>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-eclipse-plugin</artifactId>
+          <version>2.8</version>
+          <configuration>
+            <downloadSources>true</downloadSources>
+            <downloadJavadocs>true</downloadJavadocs>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    
+    <plugins>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.6</version>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${basedir}/target/classes/META-INF/services/</outputDirectory>
+              <resources>          
+                <resource>
+                  <directory>src/main/resources2</directory>
+                  <filtering>true</filtering>
+                  <includes>
+          			<include>javax.annotation.processing.Processor</include>
+			      </includes>
+                </resource>
+              </resources>              
+            </configuration>            
+          </execution>
+        </executions>
+      </plugin>
+      
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+          <execution>
+          	<id>compile-examples</id>
+            <phase>test-compile</phase>
+            <configuration>
+              <tasks>
+                <!--  The following command does not work if JAVA_HOME is not defined correctly -->
+			    <!-- <ant antfile="../BeanCrumbsExamples/BeanCumbsAnt/build.xml"/>-->
+				<exec executable="ant" dir="../beancrumbs.examples/beancrumbs.examples.ant"/>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          
+          <execution>
+          	<id>clean-examples</id>
+            <phase>clean</phase>
+            <configuration>
+              <tasks>
+				<exec executable="ant" dir="../beancrumbs.examples/beancrumbs.examples.ant">
+					<arg value="clean"/>
+				</exec>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          
+          
+        </executions>
+      </plugin>      
+
+    </plugins>    
+  </build>
+</project>
