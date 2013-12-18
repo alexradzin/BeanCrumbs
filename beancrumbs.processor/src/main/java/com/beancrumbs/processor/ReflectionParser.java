@@ -52,6 +52,7 @@ public abstract class ReflectionParser extends BeanParser<Class<?>, Class<?>, Me
 		return superClass == null ? null : superClass.getName();
 	}
 	
+	@Override
 	protected boolean isCrumbed(Class<?> type) {
 		return type.getAnnotation(Crumbed.class) != null;
 	}

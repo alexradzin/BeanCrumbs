@@ -4,8 +4,12 @@
     </description>
 	<!-- set global properties for this build -->
 	<property name="src" location="src"/>
+	<property name="tests" location="tests"/>
 	<property name="build" location="classes"/>
 	<property name="dist"  location="dist"/>
+	<property name="reports.tests"  location="target/surefire-reports"/>
+
+
 
 	<target name="init">
 		<!-- Create the time stamp -->
@@ -30,13 +34,45 @@
 		And yet another run of compile to compile skeletons created from classes that were not annotated but 
 		were mentioned in idex file
 		-->
-                <javac srcdir="${src}" destdir="${build}" includeantruntime="false" classpath="../../beancrumbs.processor/target/classes/" includes="com/beanpath/poc/*"/>
+		<javac srcdir="${src}" destdir="${build}" includeantruntime="false" classpath="../../beancrumbs.processor/target/classes/" includes="com/beanpath/poc/*"/>
 		<javac srcdir="${src}" destdir="${build}" includeantruntime="false" includes="com/beanpath/usage/*"/>
+
+		<!-- compile tests -->
+		<javac srcdir="${tests}" destdir="${build}" includeantruntime="false">
+			<classpath>
+				<pathelement location="../../beancrumbs.processor/target/classes/"/>
+				<fileset dir="lib" includes="*.jar"/>
+			</classpath>
+		</javac>
 	</target>
 
-	<target name="clean" description="clean up" >
+
+	<target name="test" depends="compile" description="run unit tests">
+		<mkdir dir="${reports.tests}"/>
+		<junit printsummary="true" haltonfailure="no" failureproperty="test.failed">
+			<classpath>
+				<pathelement location="../../beancrumbs.processor/target/classes/" />
+				<fileset dir="lib" includes="*.jar" />
+				<pathelement location="classes" />
+			</classpath>
+			<formatter type="plain"/>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.tests}">
+				<fileset dir="${tests}">
+					<include name="**/*Test.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+		<fail message="Test failure detected, check test results." if="test.failed" />
+	</target>
+
+	<target name="install" depends="test" description="compile, package, test, etc. Like maven." />
+
+
+	<target name="clean" description="clean up">
 		<delete dir="${build}"/>
 		<delete dir="${dist}"/>
 		<delete dir="${src}/com/beanpath/poc/"  includes="*Skeleton.java"/>
+		<delete dir="${reports.tests}"/>
 	</target>
 </project>

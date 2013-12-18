@@ -28,6 +28,15 @@
 			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+			<version>1.8.3</version>
+			<scope>test</scope>
+		</dependency>
+            		
+		
 	</dependencies>
 
 	<build>
@@ -50,6 +59,10 @@
 
 						<execution>
 							<id>crumbs-compile</id>
+							<phase>compile</phase>
+							<goals>
+								<goal>compile</goal>
+							</goals>
 						</execution>
 					</executions>
 				</plugin>
@@ -62,22 +75,22 @@
 						<downloadJavadocs>true</downloadJavadocs>
 					</configuration>
 				</plugin>
-
- <plugin>
-    <artifactId>maven-clean-plugin</artifactId>
-    <version>2.5</version>
-    <configuration>
-      <filesets>
-        <fileset>
-          <directory>src/main/java</directory>
-          <includes>
-		<include>**/*Skeleton.java</include>
-          </includes>
-          <followSymlinks>false</followSymlinks>
-        </fileset>
-      </filesets>
-    </configuration>
-  </plugin>
+		
+				<plugin>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>2.5</version>
+					<configuration>
+						<filesets>
+							<fileset>
+								<directory>src/main/java</directory>
+								<includes>
+									<include>**/*Skeleton.java</include>
+								</includes>
+								<followSymlinks>false</followSymlinks>
+							</fileset>
+						</filesets>
+					</configuration>
+				</plugin>
 
 			</plugins>
 		</pluginManagement>
