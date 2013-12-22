@@ -126,5 +126,6 @@
 
 	<modules>
 		<module>beancrumbs.examples.maven</module>
+		<module>beancrumbs.examples.maven-separate-dir</module>
 	</modules>
 </project>

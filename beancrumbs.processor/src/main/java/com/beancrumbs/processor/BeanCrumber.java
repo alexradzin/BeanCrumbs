@@ -43,6 +43,7 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
 import com.beancrumbs.utils.ParsingUtils;
+import com.beancrumbs.utils.PathUtils;
 
 
 
@@ -450,22 +451,18 @@ public class BeanCrumber extends AbstractProcessor {
 	 * Call class that generates code using bean meta data. 
 	 */
 	private void sprinkleBeanCrumbs(CrumbsWay way, Properties props) throws IOException {
-		logger.fine("sprinkleBeanCrumbs way: " + way + ", for beans: " + metadata.getBeanNames(way));
+		logger.fine("sprinkleBeanCrumbs way: " + way + ", for beans: " + metadata.getBeanNames(way) + ", with properties: " + props);
 
 		File generatedSrcDir = null;
-		File generatedSrcProjectRoot;// = new File(".").getCanonicalFile();
 		
 		
+		String generatedSrcProp = null;
+		String generatedSrcProjectProp = null;
 		if (props != null) {
-			String generatedSrcProjectProp = props.getProperty(GENERATED_SRC_PROJECT_PROP);
-			String generatedSrcProp = props.getProperty(GENERATED_SRC_DIR_PROP);
-			if (generatedSrcProjectProp != null) {
-				generatedSrcProjectRoot = new File(generatedSrcProjectProp);
-				if (generatedSrcProp != null) {
-					generatedSrcDir = new File(generatedSrcProjectRoot, generatedSrcProp);
-				}				
-			}
+			generatedSrcProjectProp = props.getProperty(GENERATED_SRC_PROJECT_PROP);
+			generatedSrcProp = props.getProperty(GENERATED_SRC_DIR_PROP);
 		}
+		
 		
 		
 		for (String name : metadata.getBeanNames(way)) {
@@ -488,7 +485,21 @@ public class BeanCrumber extends AbstractProcessor {
 			File originalSrcFile = new File(input.toUri());
 			
 			if (generatedSrcDir == null) {
-				generatedSrcDir = findSrcDir(originalSrcFile, packageName, simpleName);
+				File srcDir = findSrcDir(originalSrcFile, packageName, simpleName);
+				logger.finest("generatedSrcProp=" + generatedSrcProp);
+				if (generatedSrcProp == null) {
+					generatedSrcDir = srcDir;
+				} else {
+					logger.finest("discovering generatedSrcProp");
+					FileObject d = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "com", "dummy");
+					File classesDir = new File(d.toUri()).getParentFile().getParentFile();
+					File projectRoot = PathUtils.findCommonParent(srcDir, classesDir);
+					
+					if (generatedSrcProjectProp != null) {
+						projectRoot = new File(projectRoot.getParentFile(), generatedSrcProjectProp).getCanonicalFile();
+					}
+					generatedSrcDir = new File(projectRoot, generatedSrcProp).getCanonicalFile();
+				}
 			}
 
 			logger.fine("Source directory for generated sources is: " + generatedSrcDir);
