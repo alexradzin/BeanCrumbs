@@ -5,10 +5,12 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -87,7 +89,7 @@ public class BeanCrumber extends AbstractProcessor {
 			//TODO: replace CWD by the project directory. 
 			File cwd = new File(".");
 			File logProps = new File(cwd, "logging.properties");
-			//log("logProps=" + logProps + ", " + logProps.exists());
+			log("logProps=" + logProps + ", " + logProps.exists());
 			if (logProps.exists()) {
 				try {
 					LogManager.getLogManager().readConfiguration(new FileInputStream(logProps));
@@ -461,6 +463,7 @@ public class BeanCrumber extends AbstractProcessor {
 		if (props != null) {
 			generatedSrcProjectProp = props.getProperty(GENERATED_SRC_PROJECT_PROP);
 			generatedSrcProp = props.getProperty(GENERATED_SRC_DIR_PROP);
+			logger.finest("generatedSrcProjectProp=" + generatedSrcProjectProp + ", generatedSrcProp=" + generatedSrcProp);
 		}
 		
 		
@@ -589,14 +592,14 @@ public class BeanCrumber extends AbstractProcessor {
 	}
 	
 	
-//	private static void log(String msg) {
-//		try {
-//			PrintWriter writer = new PrintWriter(new FileWriter(new File("/tmp/mylog.log"), true));
-//			writer.println(msg);
-//			writer.flush();
-//			writer.close();
-//		} catch (IOException e) {
-//			throw new RuntimeException(e);
-//		}
-//	}
+	private static void log(String msg) {
+		try {
+			PrintWriter writer = new PrintWriter(new FileWriter(new File("/tmp/mylog.log"), true));
+			writer.println(msg);
+			writer.flush();
+			writer.close();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }
