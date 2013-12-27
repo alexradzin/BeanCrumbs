@@ -16,6 +16,11 @@ import com.beancrumbs.processor.BeansMetadata;
 import com.beancrumbs.processor.Crumbed;
 import com.beancrumbs.processor.CrumbsWay;
 
+/**
+ * Implementation of {@link CrumbsWay} that creates skeletons.
+ * @see Skeleton 
+ * @author alexr
+ */
 public class SkeletonWriter implements CrumbsWay {
 	private final static Logger logger = Logger.getLogger(SkeletonWriter.class .getName()); 
 	

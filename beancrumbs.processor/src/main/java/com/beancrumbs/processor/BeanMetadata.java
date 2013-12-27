@@ -3,6 +3,12 @@ package com.beancrumbs.processor;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Simple POJO that holds metadata of java bean.
+ * 
+ * @see BeanProperty 
+ * @author alexr
+ */
 public class BeanMetadata {
 	private String fullName;
 	private String packageName;

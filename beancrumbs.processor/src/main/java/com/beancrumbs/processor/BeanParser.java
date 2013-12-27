@@ -6,6 +6,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+/**
+ * Abstract base class for all bean parsers. 
+ * @author alexr
+ *
+ * @param <E>
+ * @param <T>
+ * @param <M>
+ */
 public abstract class BeanParser<E, T, M> {
 	private final static Logger logger = Logger.getLogger(BeanParser.class.getName()); 
 	private BeansMetadata metadata; 

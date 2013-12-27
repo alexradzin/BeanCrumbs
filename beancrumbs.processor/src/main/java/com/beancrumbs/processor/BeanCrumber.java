@@ -46,7 +46,21 @@ import com.beancrumbs.utils.ParsingUtils;
 import com.beancrumbs.utils.PathUtils;
 
 
-
+/**
+ * This is an entry point to the library: the annotation processor. 
+ * As all annotations processors it extends {@link AbstractProcessor}, gets 
+ * configuration and processes the elements. The result of the processing is 
+ * bean metadata that is passed to "crumbs ways". 
+ * 
+ * "Crumbs ways" are implementations of interface {@link CrumbsWay} that "knows" 
+ * how to strew the crumbes, i.e. what actually to do with just extracted bean metadata.
+ * Each "way" typically creates resources (either java source code or other resources).
+ * Implementations of  {@link CrumbsWay} should follow SPI standards, i.e. thier fully 
+ * qualified class name should be written into file 
+ * {@code META-INF/services/com.beancrumbs.processor.CrumbsWay}.
+ * 
+ * @author alexr
+ */
 @SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedOptions({Options.BEANCRUMBS_DIR_OPTION, Options.BEANCRUMBS_LOG_OPTION, Options.BEANCRUMBS_LOG_LEVEL_OPTION, Options.BEANCRUMBS_ENABLED_OPTION})
@@ -503,8 +517,6 @@ public class BeanCrumber extends AbstractProcessor {
 					generatedSrcDir = srcDir;
 				} else {
 					logger.finest("discovering generatedSrcProp");
-//					FileObject d = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "com", "dummy");
-//					File classesDir = new File(d.toUri()).getParentFile().getParentFile();
 					File classesDir = getClassesDirectory();
 					File projectRoot = PathUtils.findCommonParent(srcDir, classesDir);
 					

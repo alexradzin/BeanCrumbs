@@ -14,7 +14,14 @@ import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-
+/**
+ * Abstract base class for bean processors. It concretizes the type parameters defined in
+ * {@link BeanParser} using annotation processor terms like 
+ * {@link Element}, {@link TypeElement}, {@link ExecutableElement}
+ *  
+ * @author alexr
+ *
+ */
 public abstract class BeanProcessor extends BeanParser<Element, TypeElement, ExecutableElement> {
 	private final static Logger logger = Logger.getLogger(BeanProcessor.class.getName()); 
 	
@@ -46,10 +53,9 @@ public abstract class BeanProcessor extends BeanParser<Element, TypeElement, Exe
 		return methods;
 	}
 
-	@SuppressWarnings("cast")
 	@Override
 	protected String getTypeName(TypeElement element) {
-		return ((TypeElement)element).getQualifiedName().toString();
+		return element.getQualifiedName().toString();
 	}
 
 	@Override

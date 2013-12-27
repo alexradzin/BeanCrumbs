@@ -1,5 +1,12 @@
 package com.beancrumbs.processor;
 
+/**
+ * POJO that represents metadata of java bean property. Instances of this class\
+ * are held by {@link BeanMetadata}
+ *  
+ * @author alexr
+ * @see BeanMetadata
+ */
 public class BeanProperty {
 	private String name;
 	private String typeName;

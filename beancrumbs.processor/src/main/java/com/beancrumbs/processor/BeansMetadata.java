@@ -6,6 +6,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+/**
+ * This is a container that holds metadata of all discovered beans. 
+ * @author alexr
+ * @see BeanMetadata
+ * @see BeanProperty
+ */
 public class BeansMetadata {
 	/**
 	 * Contains map from fully qualified class name to Bean metadata.
