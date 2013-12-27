@@ -3,128 +3,21 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.beancrumbs</groupId>
 	<artifactId>beancrumbs.examples</artifactId>
-	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>beancrumbs.examples</name>
 	<url>http://maven.apache.org</url>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<junit.version>4.10</junit.version>
-	</properties>
+	<parent>
+	        <groupId>com.beancrumbs</groupId>
+        	<artifactId>beancrumbs.root</artifactId>
+	        <version>1.0</version>
+	</parent>
 
-
-	<build>
-		<plugins>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.8</version>
-				<executions>
-					<execution>
-						<id>copy</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>commons-beanutils</groupId>
-									<artifactId>commons-beanutils</artifactId>
-									<version>1.8.3</version>
-									<overWrite>true</overWrite>
-								</artifactItem>
-								<artifactItem>
-									<groupId>junit</groupId>
-									<artifactId>junit</artifactId>
-									<version>4.11</version>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.hamcrest</groupId>
-									<artifactId>hamcrest-core</artifactId>
-									<version>1.3</version>
-								</artifactItem>
-								<artifactItem>
-									<groupId>commons-logging</groupId>
-									<artifactId>commons-logging</artifactId>
-									<version>1.1.1</version>
-									<overWrite>true</overWrite>
-								</artifactItem>
-							</artifactItems>
-							<outputDirectory>./beancrumbs.examples.ant/lib</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-
-			<plugin>
-
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.7</version>
-				<executions>
-					<execution>
-						<id>compile-examples</id>
-						<phase>compile</phase>
-						<configuration>
-							<tasks>
-								<!-- The following command does not work if JAVA_HOME is not defined 
-									correctly -->
-								<!-- <ant antfile="../beancrumbs.examples/beancrumbs.ant/build.xml"/> -->
-								<exec executable="ant" dir="beancrumbs.examples.ant">
-									<arg value="compile" />
-								</exec>
-							</tasks>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-
-					<execution>
-						<id>test-examples</id>
-						<phase>test</phase>
-						<configuration>
-							<tasks>
-								<exec executable="ant" dir="beancrumbs.examples.ant" failonerror="true">
-									<arg value="test" />
-								</exec>
-							</tasks>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-
-
-					<execution>
-						<id>clean-examples</id>
-						<phase>clean</phase>
-						<configuration>
-							<tasks>
-								<exec executable="ant" dir="beancrumbs.examples.ant">
-									<arg value="clean" />
-								</exec>
-							</tasks>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-
-
-				</executions>
-			</plugin>
-
-		</plugins>
-	</build>
 
 	<modules>
+		<module>beancrumbs.examples.ant</module>
 		<module>beancrumbs.examples.maven</module>
 		<module>beancrumbs.examples.maven-separate-dir</module>
 		<module>beancrumbs.examples.maven-separate-project-main</module>
