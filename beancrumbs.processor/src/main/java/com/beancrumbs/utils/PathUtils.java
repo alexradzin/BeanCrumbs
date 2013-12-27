@@ -1,6 +1,7 @@
 package com.beancrumbs.utils;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +40,34 @@ public class PathUtils {
 		}
 		
 		return parent;
+	}
+	
+	/**
+	 * This utility method accepts file and name of other file. 
+	 * It is going up through the files hierarchy and looks for the first file with name
+	 * specified using second parameter and returns instance of this file or {@code null}
+	 * if such file was not found. 
+	 * @param anchor
+	 * @param fileName
+	 * @return nearest file
+	 */
+	public static File findFileUp(File anchor, final String fileName) {
+		File dir = anchor.isDirectory() ? anchor : anchor.getParentFile();
+		
+		for(File d = dir; d != null; d = d.getParentFile()) {
+			String[] files = d.list(new FilenameFilter() {
+				@Override
+				public boolean accept(File dir, String name) {
+					return fileName.equals(name);
+				}
+			});
+			
+			if (files != null && files.length == 1) {
+				return new File(d, files[0]);
+			}
+		}
+		
+		return null;
 	}
 	
 	private static File normalize(File file) throws IOException {

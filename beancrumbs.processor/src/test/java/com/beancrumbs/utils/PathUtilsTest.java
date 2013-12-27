@@ -58,11 +58,44 @@ public class PathUtilsTest {
 	public void testMavnLikeProject() throws IOException {
 		testProject("src/main/java", "target/classes");
 	}
+
+	@Test
+	public void testFindNotExistingFileUp() {
+		testFindFileUp(File.listRoots()[0], "doesnotexist.txt", null);
+		testFindFileUp(new File(System.getProperty("java.io.tmpdir")), "doesnotexist.txt", null);
+		testFindFileUp(new File(System.getProperty("java.io.tmpdir"), "somefile.txt"), "doesnotexist.txt", null);
+	}
 	
+	@Test
+	public void testFindFileUpExistingFileInTheSameDirectory() throws IOException {
+		File tmp = new File(System.getProperty("java.io.tmpdir"));
+		File existingFile = File.createTempFile("test", "txt", tmp);
+		existingFile.deleteOnExit();
+		testFindFileUp(new File(tmp, "dummy.txt"), existingFile.getName(), existingFile);
+	}
+	
+	@Test
+	public void testFindFileUpExistingFileInUpperDirectory() throws IOException {
+		File tmp = new File(System.getProperty("java.io.tmpdir"));
+		File subdir = new File(tmp, "subdir");
+		File existingFile = File.createTempFile("test", "txt", tmp);
+		subdir.deleteOnExit();
+		existingFile.deleteOnExit();
+		testFindFileUp(new File(subdir, "dummy.txt"), existingFile.getName(), existingFile);
+	}
+	
+	@Test
+	public void testFindFileUpNotExistingFileInUpperDirectory() throws IOException {
+		File tmp = new File(System.getProperty("java.io.tmpdir"));
+		File subdir = new File(tmp, "subdir");
+		subdir.deleteOnExit();
+		testFindFileUp(new File(subdir, "dummy.txt"), "test.txt", null);
+	}
 	
 	private void testFindCommonParent(File one, File two, File expected) throws IOException {
 		assertEquals(expected, PathUtils.findCommonParent(one, two));
 	}
+
 	
 	private boolean delete(File f) throws IOException {
 		boolean subRestult = true;
@@ -76,7 +109,7 @@ public class PathUtilsTest {
 		return subRestult && f.delete();
 	}
 	
-	public void testProject(String srcRoot, String classesRoot) throws IOException {
+	private void testProject(String srcRoot, String classesRoot) throws IOException {
 		File tmp = new File(System.getProperty("java.io.tmpdir"));
 		File projectDir = new File(tmp, "project" + System.currentTimeMillis());
 		
@@ -102,6 +135,11 @@ public class PathUtilsTest {
 			assertTrue(delete(projectDir));
 		}
 	}
+
 	
+	private void testFindFileUp(File anchor, String fileName, File expected) {
+		assertEquals(expected, PathUtils.findFileUp(anchor, fileName));
+	}
+
 	
 }

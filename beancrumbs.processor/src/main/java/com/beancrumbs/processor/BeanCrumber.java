@@ -5,12 +5,10 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -80,25 +78,6 @@ public class BeanCrumber extends AbstractProcessor {
 	private Iterable<CrumbsWay> ways = null;
 	private ClassLoader projectClassLoader;
 	
-	
-	static {
-		final String logFileConfigPropertyName = "java.util.logging.config.file";
-		String logFileConfigPropertyValue = System.getProperty(logFileConfigPropertyName);
-		
-		if (logFileConfigPropertyValue == null) {
-			//TODO: replace CWD by the project directory. 
-			File cwd = new File(".");
-			File logProps = new File(cwd, "logging.properties");
-			log("logProps=" + logProps + ", " + logProps.exists());
-			if (logProps.exists()) {
-				try {
-					LogManager.getLogManager().readConfiguration(new FileInputStream(logProps));
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		}
-	}
 
 	private final static Logger logger = Logger.getLogger(BeanCrumber.class .getName()); 
 	
@@ -111,6 +90,7 @@ public class BeanCrumber extends AbstractProcessor {
     	super.init(processingEnv);
 		try {
 			projectClassLoader = getProjectClassLoader();
+			initLogger();
 		} catch (IOException ex) {
 			ex.printStackTrace();
 			processingEnv.getMessager().printMessage(Kind.ERROR,
@@ -336,10 +316,39 @@ public class BeanCrumber extends AbstractProcessor {
 	
 	//TODO: get full project's classpath
 	private ClassLoader getProjectClassLoader() throws IOException {
-		FileObject d = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "com", "dummy");
-		URL url = new File(d.toUri()).getParentFile().getParentFile().toURI().toURL();
+		URL url = getClassesDirectory().toURI().toURL();
 		logger.fine("classpath URL: " + url);
 		return new URLClassLoader(new URL[] {url}, getClass().getClassLoader());
+	}
+
+	/**
+	 * Locates {@code logging.properties} file (if exists) and initializes the logging system. 
+	 * @throws IOException
+	 */
+	private void initLogger() throws IOException {
+		final String logFileConfigPropertyName = "java.util.logging.config.file";
+		String logFileConfigPropertyValue = System.getProperty(logFileConfigPropertyName);
+		File logProps = null;
+		
+		if (logFileConfigPropertyValue != null) {
+			logProps = new File(logFileConfigPropertyValue);
+		} else {
+			logProps = PathUtils.findFileUp(getClassesDirectory(), "logging.properties");
+		}
+		
+		//log("logProps=" + logProps + ", " + logProps.exists());
+		if (logProps != null && logProps.exists()) {
+			try {
+				LogManager.getLogManager().readConfiguration(new FileInputStream(logProps));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+	
+	private File getClassesDirectory() throws IOException {
+		FileObject d = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "com", "dummy");
+		return new File(d.toUri()).getParentFile().getParentFile();
 	}
 	
 	private InputStream getConfiguration(CrumbsWay way, Config config) throws IOException {
@@ -494,8 +503,9 @@ public class BeanCrumber extends AbstractProcessor {
 					generatedSrcDir = srcDir;
 				} else {
 					logger.finest("discovering generatedSrcProp");
-					FileObject d = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "com", "dummy");
-					File classesDir = new File(d.toUri()).getParentFile().getParentFile();
+//					FileObject d = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "com", "dummy");
+//					File classesDir = new File(d.toUri()).getParentFile().getParentFile();
+					File classesDir = getClassesDirectory();
 					File projectRoot = PathUtils.findCommonParent(srcDir, classesDir);
 					
 					if (generatedSrcProjectProp != null) {
@@ -590,16 +600,20 @@ public class BeanCrumber extends AbstractProcessor {
 		logger.fine("ways: " + ways);
 		return ways;
 	}
+
+	// "Proprietary" logging function. This is commented out because is actually not needed
+	// since the java.util.logging is introduced.
+	// It is not removed because it is very helpful when java.util.logging based logger
+	// does not work due to miss-configuration. 
 	
-	
-	private static void log(String msg) {
-		try {
-			PrintWriter writer = new PrintWriter(new FileWriter(new File("/tmp/mylog.log"), true));
-			writer.println(msg);
-			writer.flush();
-			writer.close();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+//	private static void log(String msg) {
+//		try {
+//			PrintWriter writer = new PrintWriter(new FileWriter(new File("/tmp/mylog.log"), true));
+//			writer.println(msg);
+//			writer.flush();
+//			writer.close();
+//		} catch (IOException e) {
+//			throw new RuntimeException(e);
+//		}
+//	}
 }
