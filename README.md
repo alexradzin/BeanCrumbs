@@ -76,3 +76,42 @@ Add it to your project. For example in eclipse right click on yor project, choos
 Now mark class you want to process using annotation `@Skeleton`.
 
 That's it. Now try to edit the class to make compiler to work. Probably refresh the project for the first time. See that skeleton is created in the same package. Now try to add some proerty (field, getter and setter) to your class and see that the changes are reflected in skeleton. 
+
+
+Best practices and configuration
+--------------------------------
+By default generated code is created in the same package and in the same source folder where the source class is. This is the simplest but not the best way. Creating generated code in special source folder or even in separate project sounds like a good idea. Howerver it requires some additional configuration. 
+
+Create file  under `META-INF/beancrumbs/skeleton.properties`. Add property: `generated.src.dir` to this file. For example for typical maven project where source code is located under `src/main/java` write:
+
+    generated.src.dir=src/generated/java
+
+Save the file and refresh project in IDE. Now all skeletons will be created in configured directory. 
+
+To generate code in separate project add property: `generated.src.project`, e.g.:
+
+    generated.src.project=mygenerated-code
+    
+The path of project is defined relatively to the current project's parent, i.e. if your project's path is `/user/home/me/proj/myproj` and `generated.src.project=mygenerated-code` the generated code will be created in project located in `/user/home/me/proj/mygenerated-code`.
+
+
+How to make BeanCrubms to create Skeleton for specific class?
+-------------------------------------------------------------
+1. The simplest way is to mark class using annotation `@Skeleton` packaged into `beancrumbs.jar`. This means however that application code depends on beancrumbs. 
+2. Alternatively you can create skeletons for each class that is already marked using other annotation. For example create skeletons for all persisted entities in the system or for all classes that can be used with JAXB *etc*. To do this just add property `class.annotation` to already mentioned file  `META-INF/beancrumbs/skeleton.properties`, for example:
+    
+    `class.annotation=javax.persistence.Entity, javax.xml.bind.annotation.XmlRootElement, javax.xml.bind.annotation.XmlType`
+
+3. The classes used for skeleton creation can be specified using additional properties:
+
+    `class.wildcard=com.beanpath.poc.Man?g*`
+
+or even using regular expressions:
+
+    `class.pattern=com.beanpath.poc.Man.g.*`
+
+4. Additionally classes can be specified using `META-INF/beancrumbs/skeleton.index` that contains list of fully quailified class names. Each class name should be written in separate line. 
+    
+    
+    
+    
