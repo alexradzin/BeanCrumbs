@@ -106,7 +106,7 @@ How to make BeanCrubms to create Skeleton for specific class?
 
     `class.wildcard=com.beanpath.poc.Man?g*`
 
-or even using regular expressions:
+     or even using regular expressions:
 
     `class.pattern=com.beanpath.poc.Man.g.*`
 
