@@ -13,6 +13,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -91,6 +92,8 @@ public class BeanCrumber extends AbstractProcessor {
 	private BeansMetadata metadata = new BeansMetadata();
 	private Iterable<CrumbsWay> ways = null;
 	private ClassLoader projectClassLoader;
+	
+	private final static int MAX_FS_SEARCH_DEPTH = 4;
 	
 
 	private final static Logger logger = Logger.getLogger(BeanCrumber.class .getName()); 
@@ -385,6 +388,9 @@ public class BeanCrumber extends AbstractProcessor {
 				File propsSrcDir = findSrcDir(f, path);
 				File propsFile = new File(propsSrcDir, path);
 				logger.fine("propsFile=" + propsFile.getAbsolutePath() + ", " + propsFile.exists());
+				if (!propsFile.exists()) {
+					return null;
+				}
 				return new FileInputStream(propsFile);
 			} catch (URISyntaxException e) {
 				throw new IllegalArgumentException(e);
@@ -396,13 +402,10 @@ public class BeanCrumber extends AbstractProcessor {
 	}
 	
 	private Properties getConfigurationProperties(InputStream in) throws IOException {
-		if (in == null) {
-			return null;
-		}
-		
 		Properties props = new Properties();
-		props.load(in);
-		
+		if (in != null) {
+			props.load(in);
+		}
 		return props;
 	}
 
@@ -506,7 +509,9 @@ public class BeanCrumber extends AbstractProcessor {
 			} catch (FilerException e) {
 				continue;
 			}
-			FileObject input = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, packageName, simpleName + ".java");
+			//FileObject input = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, packageName, simpleName + ".java");
+			FileObject input = processingEnv.getFiler().getResource(StandardLocation.SOURCE_OUTPUT, packageName, simpleName + ".java");
+			
 			File generatedSrcFile = new File(output.toUri());
 			File originalSrcFile = new File(input.toUri());
 			
@@ -566,8 +571,8 @@ public class BeanCrumber extends AbstractProcessor {
 			f = f.getParentFile();
 		}
 		
-		for (; f != null; f = f.getParentFile()) {
-			File root = findPath(f, path);
+		for (int depth = 0; f != null && depth < MAX_FS_SEARCH_DEPTH; f = f.getParentFile(), depth++) {
+			File root = findPath(f, path, 0);
 			if (root != null) {
 				return root;
 			}
@@ -577,7 +582,8 @@ public class BeanCrumber extends AbstractProcessor {
 	}
 
 	
-	private File findPath(File root, String path) {
+	private File findPath(File root, String path, int depth) {
+		logger.fine("findPath(" + root + ",  " + path + ")");
 		if (!root.exists()) {
 			throw new IllegalArgumentException(root.getAbsolutePath() + " does not exist");
 		}
@@ -588,15 +594,26 @@ public class BeanCrumber extends AbstractProcessor {
 		if (new File(root, path).exists()) {
 			return root;
 		}
-		for (File f : root.listFiles(new FileFilter() {
+		
+		if (depth >= MAX_FS_SEARCH_DEPTH) {
+			return null;
+		}
+
+		File[] list =  root.listFiles(new FileFilter() {
 			@Override
 			public boolean accept(File pathname) {
 				return pathname.isDirectory();
 			}
-		})) {
-			File res = findPath(f, path);
-			if (res != null) {
-				return res;
+		});		
+		
+		logger.fine("list files in " + root + ": " + Arrays.toString(list));
+		
+		if (list != null) {
+			for (File f : list) {
+				File res = findPath(f, path, depth + 1);
+				if (res != null) {
+					return res;
+				}
 			}
 		}
 		return null;

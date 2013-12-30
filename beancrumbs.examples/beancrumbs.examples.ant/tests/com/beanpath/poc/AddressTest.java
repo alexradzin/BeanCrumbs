@@ -7,7 +7,7 @@ import org.junit.Test;
 
 public class AddressTest {
 	@Test
-	public void test() throws ReflectiveOperationException {
+	public void skeletonTest() throws ReflectiveOperationException {
 		Address address = createAddress();
 		
 		assertEquals(address.getBuilding(), BeanUtils.getProperty(address, AddressSkeleton.building));

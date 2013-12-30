@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -15,6 +16,7 @@ import com.beancrumbs.processor.BeanProperty;
 import com.beancrumbs.processor.BeansMetadata;
 import com.beancrumbs.processor.Crumbed;
 import com.beancrumbs.processor.CrumbsWay;
+import com.beancrumbs.utils.ParsingUtils;
 
 /**
  * Implementation of {@link CrumbsWay} that creates skeletons.
@@ -86,15 +88,18 @@ public class SkeletonWriter implements CrumbsWay {
 	public void strew(String name, BeansMetadata data, OutputStream out) {
 		logger.info("Writing skeleton: " + name + " for bean " + data);
 		PrintWriter pw = new PrintWriter(out);
-		
 
-		String packageName = "";
-		String simpleName = name;
-		int lastDot = name.lastIndexOf('.');
-		if (lastDot >= 0) {
-			packageName = name.substring(0, lastDot);
-			simpleName = name.substring(lastDot + 1); 
-		}
+		Entry<String, String> nameElements = ParsingUtils.splitClassName(name);
+		String packageName = nameElements.getKey();
+		String simpleName = nameElements.getValue();
+
+//		String packageName = "";
+//		String simpleName = name;
+//		int lastDot = name.lastIndexOf('.');
+//		if (lastDot >= 0) {
+//			packageName = name.substring(0, lastDot);
+//			simpleName = name.substring(lastDot + 1); 
+//		}
 		
 		
 		if (packageName != null && !"".equals(packageName)) {

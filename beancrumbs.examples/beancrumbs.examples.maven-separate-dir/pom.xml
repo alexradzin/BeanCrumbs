@@ -52,6 +52,12 @@
 			<scope>compile</scope>
 		</dependency>
             		
+		<dependency>
+			<groupId>com.beancrumbs</groupId>
+			<artifactId>beancrumbs.examples.maven-separate-project-nullsafe</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
 		
 	</dependencies>
 

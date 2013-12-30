@@ -7,7 +7,7 @@ import org.junit.Test;
 
 public class EmailTest {
 	@Test
-	public void test() throws ReflectiveOperationException {
+	public void skeletonTest() throws ReflectiveOperationException {
 		Email email = new Email();
 		email.setEmail("bill.gates@microsoft.com");
 		email.setDisplayName("Bill Gates");

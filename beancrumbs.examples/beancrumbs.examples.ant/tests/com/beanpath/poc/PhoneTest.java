@@ -11,7 +11,7 @@ import com.beanpath.poc.Phone.Type;
 
 public class PhoneTest<P extends Phone> {
 	@Test
-	public void test() throws ParseException, ReflectiveOperationException {
+	public void skeletonTest() throws ParseException, ReflectiveOperationException {
 		P phone = fillPhoneData(createPhone());
 		validate(phone);
 	}

@@ -10,7 +10,7 @@ import org.junit.Test;
 
 public class PersonTest<P extends Person> {
 	@Test
-	public void test() throws ParseException, ReflectiveOperationException {
+	public void skeletonTest() throws ParseException, ReflectiveOperationException {
 		P person = fillPersonData(createPerson());
 		validate(person);
 	}

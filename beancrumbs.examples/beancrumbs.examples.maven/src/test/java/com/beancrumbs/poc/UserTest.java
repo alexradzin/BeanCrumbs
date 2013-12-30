@@ -13,7 +13,7 @@ import com.beanpath.poc.UserSkeleton;
 
 public class UserTest {
 	@Test
-	public void test() throws ReflectiveOperationException {
+	public void skeletonTest() throws ReflectiveOperationException {
 		User user = new User();
 		user.setName("Winnie the Pooh");
 		user.setPassword("piglet");

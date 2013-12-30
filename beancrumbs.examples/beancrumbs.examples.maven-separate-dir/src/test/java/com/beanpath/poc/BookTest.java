@@ -10,7 +10,7 @@ import org.junit.Test;
 
 public class BookTest {
 	@Test
-	public void test() throws ParseException, ReflectiveOperationException {
+	public void skeletonTest() throws ParseException, ReflectiveOperationException {
 		Person levTolstoy = new Person();
 		levTolstoy.setFirstName("Lev");
 		levTolstoy.setLastName("Tolstoy");

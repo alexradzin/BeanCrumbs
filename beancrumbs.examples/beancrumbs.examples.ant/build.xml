@@ -73,6 +73,7 @@
 		<delete dir="${build}"/>
 		<delete dir="${dist}"/>
 		<delete dir="${src}/com/beanpath/poc/"  includes="*Skeleton.java"/>
+		<delete dir="${src}/com/beanpath/poc/"  includes="*NullSafeAccessor.java"/>
 		<delete dir="${reports.tests}"/>
 	</target>
 </project>
