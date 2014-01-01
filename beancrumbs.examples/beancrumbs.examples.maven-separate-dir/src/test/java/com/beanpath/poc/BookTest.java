@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.junit.Test;
@@ -14,7 +15,7 @@ public class BookTest {
 		Person levTolstoy = new Person();
 		levTolstoy.setFirstName("Lev");
 		levTolstoy.setLastName("Tolstoy");
-		levTolstoy.setBithday(new SimpleDateFormat("MMMM DD, yyyy").parse("September 7, 1828"));
+		levTolstoy.setBithday(new SimpleDateFormat("MMMM DD, yyyy", Locale.US).parse("September 7, 1828"));
 		
 		Book book = new Book();
 		book.setAuthor(levTolstoy);
