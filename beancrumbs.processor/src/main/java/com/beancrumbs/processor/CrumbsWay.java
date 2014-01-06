@@ -2,6 +2,7 @@ package com.beancrumbs.processor;
 
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.Properties;
 
 /**
  * This interface defines contract of "CrumbsWay" - class that generates resource from 
@@ -15,7 +16,7 @@ public interface CrumbsWay {
 	 * @param data metadata of source bean.
 	 * @param stream the stream where to write 
 	 */
-	public void strew(String fullClassName, BeansMetadata data, OutputStream stream);
+	public void strew(String fullClassName, BeansMetadata data, OutputStream stream, Properties props);
 	
 	/**
 	 * Retrieves a collection of fully qualified class names of annotations

@@ -5,10 +5,12 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -71,6 +73,8 @@ public class BeanCrumber extends AbstractProcessor {
 	private final static String CLASS_WILDCARD_PROP = "class.wildcard";
 	private final static String GENERATED_SRC_DIR_PROP = "generated.src.dir";
 	private final static String GENERATED_SRC_PROJECT_PROP = "generated.src.project";
+
+	public final static String MAX_NESTING = "max.nesting";
 	
 	private static enum Config {
 		PROPERTIES,
@@ -106,6 +110,7 @@ public class BeanCrumber extends AbstractProcessor {
 	public synchronized void init(ProcessingEnvironment processingEnv) {
     	super.init(processingEnv);
 		try {
+			//log("Initializing...");
 			projectClassLoader = getProjectClassLoader();
 			initLogger();
 		} catch (IOException ex) {
@@ -181,14 +186,21 @@ public class BeanCrumber extends AbstractProcessor {
 
 	// TODO: getMarkers should return a collection of annotation names.
 	private Collection<String> getMarkers(Properties props, CrumbsWay way) {
+		logger.finest("getMarkers returning default markers of " + way);
+		
+		Collection<String> annotationClasses = new LinkedHashSet<String>();
+		for (String c : way.getMarkers()) {
+			annotationClasses.add(c);
+		}
+		
 		try {
-			logger.finest("getMarkers " + props);
+			logger.finest("getMarkers " + way + ": "  + props);
+			
 			if (props != null) {
 				logger.finest("getMarkers props!=null");
 				String classAnnotationProp = props.getProperty(CLASS_ANNOTATION_PROP);
 				logger.finest("getMarkers classAnnotationProp=" + classAnnotationProp);
 				if (classAnnotationProp != null) {
-					Collection<String> annotationClasses = new LinkedHashSet<String>();  
 					for (String annotationClassName : classAnnotationProp.split("\\s*[,;]\\s*")) {
 						logger.finest("getMarkers annotationClassName=" + annotationClassName);
 						annotationClasses.add(annotationClassName);
@@ -202,13 +214,7 @@ public class BeanCrumber extends AbstractProcessor {
 			processingEnv.getMessager().printMessage(Kind.ERROR,
 					ex.getMessage());
 		}
-		
-		logger.finest("getMarkers returning default markers of " + way);
-		
-		Collection<String> annotationClasses = new LinkedHashSet<String>();
-		for (String c : way.getMarkers()) {
-			annotationClasses.add(c);
-		}
+
 		
 		return annotationClasses;
 		
@@ -353,8 +359,8 @@ public class BeanCrumber extends AbstractProcessor {
 			logProps = PathUtils.findFileUp(getClassesDirectory(), "logging.properties");
 		}
 		
-		//log("logProps=" + logProps + ", " + logProps.exists());
 		if (logProps != null && logProps.exists()) {
+			//log("logProps=" + logProps + ", " + logProps.exists());
 			try {
 				LogManager.getLogManager().readConfiguration(new FileInputStream(logProps));
 			} catch (IOException e) {
@@ -544,7 +550,7 @@ public class BeanCrumber extends AbstractProcessor {
 			logger.fine("Write crumbs for class " + name + " package: " + packageName + ", simple name=" + simpleName + ": " + way.getClassName(simpleName) + " to " + srcFile.getAbsolutePath());
 			
 			OutputStream out = new FileOutputStream(srcFile);
-			way.strew(name, metadata, out);
+			way.strew(name, metadata, out, props);
 			out.flush();
 			out.close();
 		}

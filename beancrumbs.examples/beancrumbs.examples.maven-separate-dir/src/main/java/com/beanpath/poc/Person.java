@@ -9,6 +9,7 @@ public class Person {
 	private String firstName;
 	private String lastName;
 	private Date bithday;
+	private Person spouse;
 	
 	public String getFirstName() {
 		return firstName;
@@ -29,6 +30,12 @@ public class Person {
 		this.bithday = bithday;
 	}
 	
+	public Person getSpouse() {
+		return spouse;
+	}
+	public void setSpouse(Person spouse) {
+		this.spouse = spouse;
+	}
 	@Override
 	public String toString() {
 		return "Person" + firstName + " " + lastName + "";

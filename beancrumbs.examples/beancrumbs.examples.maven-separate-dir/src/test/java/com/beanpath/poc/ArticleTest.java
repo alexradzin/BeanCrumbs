@@ -2,6 +2,7 @@ package com.beanpath.poc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 
 import java.text.ParseException;
 
@@ -31,6 +32,13 @@ public class ArticleTest {
 	
 	@Test
 	public void nullSafeTest() {
-		assertNull(NullSafe.$(new Article()).getMagazine().getName());
+		Article article = new Article();
+		Article nullSafeArticle = NullSafe.$(article);
+		assertNull(nullSafeArticle.getMagazine().getName());
+		assertNull(nullSafeArticle.getAuthor());
+		assertNull(nullSafeArticle.getTitle());
+		
+		assertNull(article.getMagazine());
+		assertNotNull(nullSafeArticle.getMagazine()); // returns wrapped object
 	}
 }

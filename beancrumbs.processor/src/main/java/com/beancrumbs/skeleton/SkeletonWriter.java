@@ -8,9 +8,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import com.beancrumbs.processor.BeanCrumber;
 import com.beancrumbs.processor.BeanMetadata;
 import com.beancrumbs.processor.BeanProperty;
 import com.beancrumbs.processor.BeansMetadata;
@@ -85,7 +87,7 @@ public class SkeletonWriter implements CrumbsWay {
 			}));
 
 	@Override
-	public void strew(String name, BeansMetadata data, OutputStream out) {
+	public void strew(String name, BeansMetadata data, OutputStream out, Properties props) {
 		logger.info("Writing skeleton: " + name + " for bean " + data);
 		PrintWriter pw = new PrintWriter(out);
 
@@ -93,26 +95,23 @@ public class SkeletonWriter implements CrumbsWay {
 		String packageName = nameElements.getKey();
 		String simpleName = nameElements.getValue();
 
-//		String packageName = "";
-//		String simpleName = name;
-//		int lastDot = name.lastIndexOf('.');
-//		if (lastDot >= 0) {
-//			packageName = name.substring(0, lastDot);
-//			simpleName = name.substring(lastDot + 1); 
-//		}
-		
+
 		
 		if (packageName != null && !"".equals(packageName)) {
 			pw.println("package " + packageName + ";");
 			pw.println();
 		}
 		
-
-		writeSkeletonImpl(name, simpleName, 0, data, pw);
+		int maxNesting = Integer.parseInt(props.getProperty(BeanCrumber.MAX_NESTING, "16"));
+		writeSkeletonImpl(name, simpleName, 0, maxNesting, data, pw);
 	}
 
 	
-	private void writeSkeletonImpl(String name, String simpleName, int nesting, BeansMetadata data, PrintWriter pw) {
+	private void writeSkeletonImpl(String name, String simpleName, int nesting, int maxNesting, BeansMetadata data, PrintWriter pw) {
+		if (nesting > maxNesting) {
+			logger.info("Writing skeleton: " + name + ", " + simpleName + " if finished because nesting " + nesting + " > " + maxNesting);
+			return;
+		}
 		logger.info("Writing skeleton: " + name + ", " + simpleName);
 		String tabs = tab(nesting);
 		String propTabs = tab(nesting + 1);
@@ -135,7 +134,7 @@ public class SkeletonWriter implements CrumbsWay {
 		
 		BeanMetadata context = data.getBeanMetadata(name);
 		
-		writeProperties(context.getProperties(), nesting, data, pw);
+		writeProperties(simpleName, context.getProperties(), nesting, maxNesting, data, pw);
 		
 		
 		for (BeanMetadata superContext = data.getBeanMetadata(context.getSuperClassName()); 
@@ -143,7 +142,7 @@ public class SkeletonWriter implements CrumbsWay {
 				superContext = data.getBeanMetadata(superContext.getSuperClassName())) {
 			
 			pw.println(propTabs + "// Inherited from " + superContext.getFullName());
-			writeProperties(superContext.getProperties(), nesting, data, pw);
+			writeProperties(simpleName, superContext.getProperties(), nesting, maxNesting, data, pw);
 		}
 		
 		pw.println(tabs + "}");
@@ -151,7 +150,7 @@ public class SkeletonWriter implements CrumbsWay {
 	}
 	
 	
-	private void writeProperties(Map<String, BeanProperty> properties, int nesting, BeansMetadata data, PrintWriter pw) {
+	private void writeProperties(String simpleName, Map<String, BeanProperty> properties, int nesting, int maxNesting, BeansMetadata data, PrintWriter pw) {
 		String propTabs = tab(nesting + 1);
 		
 		for(Map.Entry<String, BeanProperty> entry : properties.entrySet()) {
@@ -160,7 +159,11 @@ public class SkeletonWriter implements CrumbsWay {
 			logger.info("Writing skeleton property: " + type + " " + fieldName);
 			
 			if (data.getBeanMetadata(type) != null) {
-				writeSkeletonImpl(type, fieldName, nesting + 1, data, pw);
+				if (simpleName.equals(fieldName)) {
+					logger.info("Ignoring skeleton property " + fieldName + " because it equals to referencing property (e.g. enclosing class)");
+					continue;
+				}
+				writeSkeletonImpl(type, fieldName, nesting + 1, maxNesting, data, pw);
 			} else {
 				String fmtFieldName = fixPropertyName(fieldName);
 				String prefix = propTabs + "public final static String " + fmtFieldName + " = ";

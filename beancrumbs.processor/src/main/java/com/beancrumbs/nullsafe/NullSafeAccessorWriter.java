@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import com.beancrumbs.processor.BeanMetadata;
@@ -21,7 +22,7 @@ public class NullSafeAccessorWriter implements CrumbsWay {
 	private final static String CLASS_NAME_SUFFIX = "NullSafeAccessor";
 
 	@Override
-	public void strew(String fullClassName, BeansMetadata data, OutputStream out) {
+	public void strew(String fullClassName, BeansMetadata data, OutputStream out, Properties props) {
 		logger.info("Writing skeleton: " + fullClassName + " for bean " + data);
 		PrintWriter pw = new PrintWriter(out);
 		
