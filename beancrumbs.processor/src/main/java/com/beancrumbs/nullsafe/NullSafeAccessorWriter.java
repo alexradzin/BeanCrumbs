@@ -4,6 +4,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -20,6 +21,17 @@ import com.beancrumbs.utils.ParsingUtils;
 public class NullSafeAccessorWriter implements CrumbsWay {
 	private final static Logger logger = Logger.getLogger(SkeletonWriter.class .getName()); 
 	private final static String CLASS_NAME_SUFFIX = "NullSafeAccessor";
+	private final static Map<String, String> defaultValuesPerType = new HashMap<>();
+	static {
+		defaultValuesPerType.put("byte", "0");
+		defaultValuesPerType.put("char", "0");
+		defaultValuesPerType.put("short", "0");
+		defaultValuesPerType.put("int", "0");
+		defaultValuesPerType.put("long", "0L");
+		defaultValuesPerType.put("float", "0.0f");
+		defaultValuesPerType.put("double", "0.0");
+		defaultValuesPerType.put("boolean", "false");
+	}
 
 	@Override
 	public void strew(String fullClassName, BeansMetadata data, OutputStream out, Properties props) {
@@ -69,8 +81,8 @@ public class NullSafeAccessorWriter implements CrumbsWay {
 					(boolean.class.getSimpleName().equals(type) ? "is" : "get") + 
 					fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
 			
-			
-			String directAccessExpression = "instance == null ? null : instance." + getterName + "()";
+			String defaultValue = getDefaultValue(type);
+			String directAccessExpression = "instance == null ? " + defaultValue + " : instance." + getterName + "()";
 			String accessExpression = directAccessExpression;
 			if (data.getBeanMetadata(type) != null) {
 				String typeAccessor = getAccessorClassName(type);
@@ -102,6 +114,10 @@ public class NullSafeAccessorWriter implements CrumbsWay {
 	}
 
 
+	private String getDefaultValue(String typeName) {
+		return defaultValuesPerType.get(typeName);
+	}
+	
 	static String getAccessorClassName(String beanClassName) {
 		return beanClassName + CLASS_NAME_SUFFIX;
 	}
