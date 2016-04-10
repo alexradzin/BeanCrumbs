@@ -67,7 +67,7 @@ public class FunctionWriter implements CrumbsWay {
 	
 	
 	@Override
-	public void strew(String fullClassName, BeansMetadata data, OutputStream out, Properties props) {
+	public boolean strew(String fullClassName, BeansMetadata data, OutputStream out, Properties props) {
 		logger.info("Writing properties functions: " + fullClassName + " for bean " + data);
 		PrintWriter pw = new PrintWriter(out);
 
@@ -101,6 +101,7 @@ public class FunctionWriter implements CrumbsWay {
 		
 		writeFunctionsImpl(fullClassName, simpleName, data, pw);
 		pw.flush();
+		return true;
 	}
 	
 	
