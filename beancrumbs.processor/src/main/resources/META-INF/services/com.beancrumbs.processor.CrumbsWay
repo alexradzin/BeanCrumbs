@@ -1,2 +1,3 @@
 com.beancrumbs.skeleton.SkeletonWriter
 com.beancrumbs.nullsafe.NullSafeAccessorWriter
+com.beancrumbs.function.FunctionWriter

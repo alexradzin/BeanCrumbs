@@ -9,17 +9,22 @@ public class ParsingUtils {
 		return Pattern.compile(regex);
 	}
 	
-	public static Entry<String, String> splitClassName(String className) {
+	public static Entry<String, String> splitClassName(final String className) {
 		String packageName = "";
 		String simpleName = className;
-		int lastDot = className.lastIndexOf('.');
+		
+		int firstLt = className.lastIndexOf('<');
+		if (firstLt > 0) {
+			simpleName = className.substring(0,  firstLt);
+		}
+		int lastDot = simpleName.lastIndexOf('.');
 		if (lastDot >= 0) {
-			packageName = className.substring(0, lastDot);
-			simpleName = className.substring(lastDot + 1); 
+			packageName = simpleName.substring(0, lastDot);
+			simpleName = simpleName.substring(lastDot + 1); 
 		}
 		
 		final String pName = packageName;
-		final String cName = simpleName;
+		final String cName = simpleName + (firstLt > 0 ? className.substring(firstLt) : "");
 		
 		return new Entry<String, String>() {
 			@Override
@@ -36,7 +41,12 @@ public class ParsingUtils {
 			public String setValue(String value) {
 				throw new UnsupportedOperationException();
 			}
-			
 		};
 	}
+	
+	public static String pureClassName(String className) {
+		int posLt = className.indexOf('<');
+		return posLt > 0 ? className.substring(0, posLt) : className;
+	}
+	
 }
