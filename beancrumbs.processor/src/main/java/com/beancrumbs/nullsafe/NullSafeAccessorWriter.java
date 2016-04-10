@@ -34,7 +34,7 @@ public class NullSafeAccessorWriter implements CrumbsWay {
 	}
 
 	@Override
-	public void strew(String fullClassName, BeansMetadata data, OutputStream out, Properties props) {
+	public boolean strew(String fullClassName, BeansMetadata data, OutputStream out, Properties props) {
 		logger.info("Writing skeleton: " + fullClassName + " for bean " + data);
 		PrintWriter pw = new PrintWriter(out);
 		
@@ -49,6 +49,7 @@ public class NullSafeAccessorWriter implements CrumbsWay {
 		
 
 		writeAccessorImpl(fullClassName, simpleName, data, pw);
+		return true;
 	}
 	
 	private void writeAccessorImpl(String name, String simpleName, BeansMetadata data, PrintWriter pw) {

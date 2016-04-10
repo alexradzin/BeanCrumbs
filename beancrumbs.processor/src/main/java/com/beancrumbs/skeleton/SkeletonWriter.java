@@ -87,7 +87,7 @@ public class SkeletonWriter implements CrumbsWay {
 			}));
 
 	@Override
-	public void strew(String name, BeansMetadata data, OutputStream out, Properties props) {
+	public boolean strew(String name, BeansMetadata data, OutputStream out, Properties props) {
 		logger.info("Writing skeleton: " + name + " for bean " + data);
 		PrintWriter pw = new PrintWriter(out);
 
@@ -104,6 +104,7 @@ public class SkeletonWriter implements CrumbsWay {
 		
 		int maxNesting = Integer.parseInt(props.getProperty(BeanCrumber.MAX_NESTING, "16"));
 		writeSkeletonImpl(name, simpleName, 0, maxNesting, data, pw);
+		return true;
 	}
 
 	

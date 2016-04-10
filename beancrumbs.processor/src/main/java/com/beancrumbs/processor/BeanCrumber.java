@@ -1,6 +1,7 @@
 package com.beancrumbs.processor;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -542,15 +543,18 @@ public class BeanCrumber extends AbstractProcessor {
 				throw new IllegalStateException("Cannot find directory for generated source files");
 			}
 			
-			File srcFile = new File(new File(generatedSrcDir, packageName.replace('.', '/')), generatedSrcFile.getName());
-			srcFile.getParentFile().mkdirs();
+			ByteArrayOutputStream buf = new ByteArrayOutputStream();
+			boolean done = way.strew(name, metadata, buf, props);
 
-			logger.fine("Write crumbs for class " + name + " package: " + packageName + ", simple name=" + simpleName + ": " + way.getClassName(simpleName) + " to " + srcFile.getAbsolutePath());
-			
-			OutputStream out = new FileOutputStream(srcFile);
-			way.strew(name, metadata, out, props);
-			out.flush();
-			out.close();
+			if (done) {
+				File srcFile = new File(new File(generatedSrcDir, packageName.replace('.', '/')), generatedSrcFile.getName());
+				srcFile.getParentFile().mkdirs();
+				logger.fine("Write crumbs for class " + name + " package: " + packageName + ", simple name=" + simpleName + ": " + way.getClassName(simpleName) + " to " + srcFile.getAbsolutePath());
+				OutputStream out = new FileOutputStream(srcFile);
+				out.write(buf.toByteArray());
+				out.flush();
+				out.close();
+			}
 		}
 	}
 

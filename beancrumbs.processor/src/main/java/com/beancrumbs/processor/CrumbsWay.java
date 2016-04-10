@@ -16,7 +16,7 @@ public interface CrumbsWay {
 	 * @param data metadata of source bean.
 	 * @param stream the stream where to write 
 	 */
-	public void strew(String fullClassName, BeansMetadata data, OutputStream stream, Properties props);
+	public boolean strew(String fullClassName, BeansMetadata data, OutputStream stream, Properties props);
 	
 	/**
 	 * Retrieves a collection of fully qualified class names of annotations
