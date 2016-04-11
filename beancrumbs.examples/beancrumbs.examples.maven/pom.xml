@@ -27,14 +27,19 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		
+
 		<dependency>
 			<groupId>commons-beanutils</groupId>
 			<artifactId>commons-beanutils</artifactId>
 			<version>1.8.3</version>
 			<scope>test</scope>
 		</dependency>
-            		
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>19.0</version>
+		</dependency>
 		
 	</dependencies>
 
@@ -74,7 +79,7 @@
 						<downloadJavadocs>true</downloadJavadocs>
 					</configuration>
 				</plugin>
-		
+
 				<plugin>
 					<artifactId>maven-clean-plugin</artifactId>
 					<version>2.5</version>
@@ -95,5 +100,5 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-	
+
 </project>

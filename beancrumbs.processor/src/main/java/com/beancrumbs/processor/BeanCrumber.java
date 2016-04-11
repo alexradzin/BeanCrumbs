@@ -57,7 +57,7 @@ import com.beancrumbs.utils.PathUtils;
  * "Crumbs ways" are implementations of interface {@link CrumbsWay} that "knows" 
  * how to strew the crumbes, i.e. what actually to do with just extracted bean metadata.
  * Each "way" typically creates resources (either java source code or other resources).
- * Implementations of  {@link CrumbsWay} should follow SPI standards, i.e. thier fully 
+ * Implementations of  {@link CrumbsWay} should follow SPI standards, i.e. their fully 
  * qualified class name should be written into file 
  * {@code META-INF/services/com.beancrumbs.processor.CrumbsWay}.
  * 
@@ -188,8 +188,11 @@ public class BeanCrumber extends AbstractProcessor {
 		logger.finest("getMarkers returning default markers of " + way);
 		
 		Collection<String> annotationClasses = new LinkedHashSet<String>();
-		for (String c : way.getMarkers()) {
-			annotationClasses.add(c);
+		Collection<String> markers = way.getMarkers();
+		if (markers != null) {
+			for (String c : markers) {
+				annotationClasses.add(c);
+			}
 		}
 		
 		try {

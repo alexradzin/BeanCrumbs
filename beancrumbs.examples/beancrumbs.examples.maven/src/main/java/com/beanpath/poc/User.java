@@ -4,10 +4,12 @@ import java.util.Set;
 
 import javax.persistence.Entity;
 
+import com.beancrumbs.function.PropertyFuction;
 import com.beancrumbs.nullsafe.NullSafeAccess;
 
 @Entity
 @NullSafeAccess
+@PropertyFuction
 public class User {
 	private String name;
 	private String password;
