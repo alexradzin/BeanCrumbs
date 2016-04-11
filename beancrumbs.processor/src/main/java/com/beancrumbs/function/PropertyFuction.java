@@ -11,16 +11,4 @@ import java.lang.annotation.Target;
 @Retention(SOURCE)
 @Target({TYPE, METHOD, FIELD})
 public @interface PropertyFuction {
-	/**
-	 * Enables/disables read function creating
-	 * This feature is currently not supported by framework
-	 * @return
-	 */
-	boolean read() default true;
-	/**
-	 * Enables/disables write function creating. 
-	 * This feature is currently not supported by framework
-	 * @return
-	 */
-	boolean write() default true;
 }
