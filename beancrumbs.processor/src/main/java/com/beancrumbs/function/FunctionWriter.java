@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import com.beancrumbs.common.HandlerConf;
 import com.beancrumbs.processor.BeanProperty;
 import com.beancrumbs.processor.BeansMetadata;
 import com.beancrumbs.processor.Crumbed;
@@ -39,7 +40,7 @@ public class FunctionWriter implements CrumbsWay {
 	
 	@Override
 	public boolean strew(String fullClassName, BeansMetadata data, OutputStream out, Properties props) {
-		WritingConf conf = new WritingConf(props);
+		ClassWritingConf conf = new ClassWritingConf(props);
 		if (!conf.isValid()) {
 			return false;
 		}
@@ -64,7 +65,7 @@ public class FunctionWriter implements CrumbsWay {
 	}
 	
 	
-	private void writeImports(String fullClassName, BeansMetadata data, WritingConf conf, PrintWriter pw) {
+	private void writeImports(String fullClassName, BeansMetadata data, ClassWritingConf conf, PrintWriter pw) {
 		if (!conf.isImportReferences()) {
 			return;
 		}
@@ -90,7 +91,7 @@ public class FunctionWriter implements CrumbsWay {
 	}
 	
 	
-	private void writeFunctions(String fullClassName, String simpleName, BeansMetadata data, WritingConf conf, PrintWriter pw) {
+	private void writeFunctions(String fullClassName, String simpleName, BeansMetadata data, ClassWritingConf conf, PrintWriter pw) {
 		pw.println("@" + Crumbed.class.getName() + "(" + PropertyFuction.class.getName() + ".class" + ")");
 		pw.println("public class " + getClassName(simpleName) + " {");
 		Map<String, BeanProperty> properties = data.getBeanMetadata(fullClassName).getProperties();
@@ -102,7 +103,7 @@ public class FunctionWriter implements CrumbsWay {
 	}
 	
 	
-	private void writePropertyFunctions(String simpleClassName, BeanProperty property, WritingConf conf, PrintWriter pw) {
+	private void writePropertyFunctions(String simpleClassName, BeanProperty property, ClassWritingConf conf, PrintWriter pw) {
 		if (property.isReadable()) {
 			String typeName = property.getTypeName();
 			HandlerConf handlerConf = isBoolean(typeName) ? conf.getPredicate() : conf.getGetter();
@@ -114,8 +115,8 @@ public class FunctionWriter implements CrumbsWay {
 	}
 	
 	
-	private void writePropertyFunction(String simpleClassName, BeanProperty property, WritingConf conf, PrintWriter pw, HandlerConf handlerConf) {
-		pw.println(handlerConf.getRole().getCode(simpleClassName, property, conf));
+	private void writePropertyFunction(String simpleClassName, BeanProperty property, ClassWritingConf conf, PrintWriter pw, HandlerConf handlerConf) {
+		pw.println(handlerConf.getSourceCodeGenerator().getCode(simpleClassName, property, conf));
 		pw.flush();
 	}
 

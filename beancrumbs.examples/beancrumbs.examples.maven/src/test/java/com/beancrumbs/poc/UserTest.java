@@ -1,5 +1,9 @@
 package com.beancrumbs.poc;
 
+import static com.beanpath.poc.UserFunction.enabled;
+import static com.beanpath.poc.UserFunction.name;
+import static com.beanpath.poc.UserFunction.password;
+import static com.beanpath.poc.UserFunction.roles;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
@@ -8,7 +12,6 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.junit.Test;
 
 import com.beanpath.poc.User;
-import com.beanpath.poc.UserFunction;
 import com.beanpath.poc.UserRole;
 import com.beanpath.poc.UserSkeleton;
 
@@ -29,20 +32,20 @@ public class UserTest {
 		User user = createUser();
 		assertFunctions(user);
 		
-		UserFunction.name("Piglet").apply(user);
-		UserFunction.password("pooh").apply(user);
-		UserFunction.enabled(false).apply(user);
-		UserFunction.roles(Collections.singleton(UserRole.USER)).apply(user);
+		name("Piglet").apply(user);
+		password("pooh").apply(user);
+		enabled(false).apply(user);
+		roles(Collections.singleton(UserRole.USER)).apply(user);
 		
 		assertFunctions(user);
 	}
 
 	
 	private void assertFunctions(User user) {
-		assertEquals(user.getName(), UserFunction.name.apply(user));
-		assertEquals(user.getPassword(), UserFunction.password.apply(user));
-		assertEquals(user.isEnabled(), UserFunction.enabled.apply(user));
-		assertEquals(formatCollectionString(String.valueOf(user.getRoles())), formatCollectionString(UserFunction.roles.apply(user).toString()));
+		assertEquals(user.getName(), name.apply(user));
+		assertEquals(user.getPassword(), password.apply(user));
+		assertEquals(user.isEnabled(), enabled.apply(user));
+		assertEquals(formatCollectionString(String.valueOf(user.getRoles())), formatCollectionString(roles.apply(user).toString()));
 	}
 	
 	

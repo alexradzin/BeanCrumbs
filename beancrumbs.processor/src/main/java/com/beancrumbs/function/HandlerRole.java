@@ -1,9 +1,10 @@
 package com.beancrumbs.function;
 
+import com.beancrumbs.common.SourceCodeGenerator;
 import com.beancrumbs.processor.BeanProperty;
 import com.beancrumbs.utils.ParsingUtils;
 
-enum HandlerRole {
+enum HandlerRole implements SourceCodeGenerator {
 	// 1: object type, 2: canonical property type, 3: object parameter name, 4: getter name, 5: property name, 6: parent, 7: method access modifier, 8: method
 	GETTER(
 			"	public static final %6$s<%1$s, %2$s> %5$s = new %6$s<%1$s, %2$s>() {%n" + 
@@ -14,9 +15,9 @@ enum HandlerRole {
 			"	};%n" 
 			) {
 		
-		String getCode(String simpleClassName, BeanProperty property, WritingConf conf) {
+		public String getCode(String simpleClassName, BeanProperty property, ClassWritingConf conf) {
 			String typeName = property.getTypeName();
-			return String.format(conf.getGetter().getRole().codeTemplate(),
+			return String.format(codeTemplate(), //conf.getGetter().getSourceCodeGenerator().codeTemplate(),
 					simpleClassName, 
 					ParsingUtils.canoninize(typeName, conf.isImportReferences()), 
 					ParsingUtils.firstToLowerCase(simpleClassName),
@@ -42,9 +43,9 @@ enum HandlerRole {
 			"	}%n" 
 			) {
 		
-		String getCode(String simpleClassName, BeanProperty property, WritingConf conf) {
+		public String getCode(String simpleClassName, BeanProperty property, ClassWritingConf conf) {
 			String typeName = property.getTypeName();
-			return String.format(conf.getSetter().getRole().codeTemplate(),
+			return String.format(codeTemplate(), //conf.getSetter().getSourceCodeGenerator().codeTemplate(),
 					simpleClassName, 
 					ParsingUtils.canoninize(typeName, conf.isImportReferences()), 
 					ParsingUtils.firstToLowerCase(simpleClassName), 
@@ -69,8 +70,8 @@ enum HandlerRole {
 			"	};%n" 
 	) {
 		
-		String getCode(String simpleClassName, BeanProperty property, WritingConf conf) {
-			return String.format(conf.getPredicate().getRole().codeTemplate(), 					
+		public String getCode(String simpleClassName, BeanProperty property, ClassWritingConf conf) {
+			return String.format(codeTemplate(), //conf.getPredicate().getSourceCodeGenerator().codeTemplate(), 					
 					simpleClassName, 
 					ParsingUtils.firstToLowerCase(simpleClassName),
 					property.getGetterName(),
@@ -101,7 +102,4 @@ enum HandlerRole {
 	String propertyName() {
 		return name().toLowerCase();
 	}
-
-	
-	abstract String getCode(String simpleClassName, BeanProperty property, WritingConf conf);
 }

@@ -1,6 +1,6 @@
-package com.beancrumbs.function;
+package com.beancrumbs.common;
 
-enum AccessModifier {
+public enum AccessModifier {
 	PUBLIC, PROTECTED, PACKAGE;
 	
 	public static AccessModifier byName(String name) {

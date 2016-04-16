@@ -1,8 +1,13 @@
 package com.beancrumbs.function;
 
 import java.util.Properties;
+import java.util.regex.Pattern;
 
-class WritingConf {
+import com.beancrumbs.common.AccessModifier;
+import com.beancrumbs.common.HandlerConf;
+
+public class ClassWritingConf {
+	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 	private boolean importReferences;
 	
 	private final HandlerConf getter;
@@ -10,7 +15,7 @@ class WritingConf {
 	private final HandlerConf predicate;
 	
 	
-	WritingConf(Properties props) {
+	ClassWritingConf(Properties props) {
 		importReferences = Boolean.parseBoolean(props.getProperty(FunctionWriter.IMPORT, "true"));
 		getter = parse(props, HandlerRole.GETTER);
 		setter = parse(props, HandlerRole.SETTER);
@@ -19,8 +24,26 @@ class WritingConf {
 	
 	private HandlerConf parse(Properties props, HandlerRole role) {
 		String propertyName = role.propertyName();
-		return HandlerConf.parse(propertyName, props.getProperty(propertyName));
+		return parse(propertyName, props.getProperty(propertyName));
 	}
+	
+	private HandlerConf parse(String roleName, String conf) {
+		if (conf == null) {
+			return null;
+		}
+		String[] args = WHITESPACE.split(conf);
+		HandlerRole role = HandlerRole.byName(roleName);
+		switch (args.length) {
+			case 2:
+				return new HandlerConf(args[0], args[1], role);
+			case 3:
+				return new HandlerConf(args[0], AccessModifier.byName(args[1]), args[2], role);
+			default:
+				throw new IllegalArgumentException(conf);
+		}
+	}
+	
+	
 	
 
 	boolean isValid() {
