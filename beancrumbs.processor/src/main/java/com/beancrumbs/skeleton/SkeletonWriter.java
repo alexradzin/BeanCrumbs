@@ -26,10 +26,10 @@ import com.beancrumbs.utils.ParsingUtils;
  * @author alexr
  */
 public class SkeletonWriter implements CrumbsWay {
-	private final static Logger logger = Logger.getLogger(SkeletonWriter.class .getName()); 
+	private static final Logger logger = Logger.getLogger(SkeletonWriter.class .getName()); 
 	
-	private final static String ground = "$";
-	private final static Set<String> javaKeywords = new HashSet<String>(Arrays.asList(
+	private static final String ground = "$";
+	private static final Set<String> javaKeywords = new HashSet<String>(Arrays.asList(
 			new String[] {
 					"abstract",
 					"assert",
@@ -129,7 +129,7 @@ public class SkeletonWriter implements CrumbsWay {
 		pw.println(tabs + "public " + modifier + "class " + simpleName + suffix + " {");
 		
 		if (nesting > 0) {
-			pw.println(propTabs + "public final static String " + ground + " = " + "\"" + simpleName + "\"" + ";");
+			pw.println(propTabs + "public static final String " + ground + " = " + "\"" + simpleName + "\"" + ";");
 		}
 
 		

@@ -19,9 +19,9 @@ import com.beancrumbs.skeleton.SkeletonWriter;
 import com.beancrumbs.utils.ParsingUtils;
 
 public class NullSafeAccessorWriter implements CrumbsWay {
-	private final static Logger logger = Logger.getLogger(SkeletonWriter.class .getName()); 
-	private final static String CLASS_NAME_SUFFIX = "NullSafeAccessor";
-	private final static Map<String, String> defaultValuesPerType = new HashMap<>();
+	private static final Logger logger = Logger.getLogger(SkeletonWriter.class.getName());
+	private static final String CLASS_NAME_SUFFIX = "NullSafeAccessor";
+	private static final Map<String, String> defaultValuesPerType = new HashMap<>();
 	static {
 		defaultValuesPerType.put("byte", "0");
 		defaultValuesPerType.put("char", "0");
@@ -37,21 +37,20 @@ public class NullSafeAccessorWriter implements CrumbsWay {
 	public boolean strew(String fullClassName, BeansMetadata data, OutputStream out, Properties props) {
 		logger.info("Writing skeleton: " + fullClassName + " for bean " + data);
 		PrintWriter pw = new PrintWriter(out);
-		
+
 		Entry<String, String> nameElements = ParsingUtils.splitClassName(fullClassName);
 		String packageName = nameElements.getKey();
 		String simpleName = nameElements.getValue();
-		
+
 		if (packageName != null && !"".equals(packageName)) {
 			pw.println("package " + packageName + ";");
 			pw.println();
 		}
-		
 
 		writeAccessorImpl(fullClassName, simpleName, data, pw);
 		return true;
 	}
-	
+
 	private void writeAccessorImpl(String name, String simpleName, BeansMetadata data, PrintWriter pw) {
 		logger.info("Writing accessor: " + name + ", " + simpleName);
 		pw.println("@" + Crumbed.class.getName() + "(" + NullSafeAccess.class.getName() + ".class" + ")");
@@ -66,28 +65,27 @@ public class NullSafeAccessorWriter implements CrumbsWay {
 		pw.println("}");
 		pw.flush();
 	}
-	
+
 	private void writeProperties(Map<String, BeanProperty> properties, BeansMetadata data, PrintWriter pw) {
-		for(Map.Entry<String, BeanProperty> entry : properties.entrySet()) {
+		for (Map.Entry<String, BeanProperty> entry : properties.entrySet()) {
 			if (!entry.getValue().isReadable()) {
 				continue;
 			}
 			String type = entry.getValue().getTypeName();
-			
+
 			String fieldName = entry.getKey();
 			logger.info("Writing null-safe accessible property: " + type + " " + fieldName);
-			
-			
-			String getterName = 
-					(boolean.class.getSimpleName().equals(type) ? "is" : "get") + 
-					fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-			
+
+			String getterName = (boolean.class.getSimpleName().equals(type) ? "is" : "get")
+					+ fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+
 			String defaultValue = getDefaultValue(type);
 			String directAccessExpression = "instance == null ? " + defaultValue + " : instance." + getterName + "()";
 			String accessExpression = directAccessExpression;
 			if (data.getBeanMetadata(type) != null) {
 				String typeAccessor = getAccessorClassName(type);
-				//accessExpression = directAccessExpression + " == null ? new " + typeAccessor + "() : " + directAccessExpression;
+				// accessExpression = directAccessExpression + " == null ? new "
+				// + typeAccessor + "() : " + directAccessExpression;
 				accessExpression = "new " + typeAccessor + "(" + directAccessExpression + ")";
 			}
 
@@ -97,11 +95,10 @@ public class NullSafeAccessorWriter implements CrumbsWay {
 			pw.println("	}");
 		}
 	}
-	
 
 	@Override
 	public Collection<String> getMarkers() {
-		return Collections.<String>singleton(NullSafeAccess.class.getName());
+		return Collections.<String> singleton(NullSafeAccess.class.getName());
 	}
 
 	@Override
@@ -114,11 +111,10 @@ public class NullSafeAccessorWriter implements CrumbsWay {
 		return originalClassName + CLASS_NAME_SUFFIX;
 	}
 
-
 	private String getDefaultValue(String typeName) {
 		return defaultValuesPerType.get(typeName);
 	}
-	
+
 	static String getAccessorClassName(String beanClassName) {
 		return beanClassName + CLASS_NAME_SUFFIX;
 	}

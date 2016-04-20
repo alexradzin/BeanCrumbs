@@ -4,10 +4,10 @@ import java.io.File;
 import java.util.Map;
 
 public class Options {
-	public final static String BEANCRUMBS_DIR_OPTION = "skeleton_dir";
-	public final static String BEANCRUMBS_LOG_OPTION = "skeleton_log";
-	public final static String BEANCRUMBS_LOG_LEVEL_OPTION = "skeleton_log_level";
-	public final static String BEANCRUMBS_ENABLED_OPTION = "skeleton_enabled";
+	public static final String BEANCRUMBS_DIR_OPTION = "skeleton_dir";
+	public static final String BEANCRUMBS_LOG_OPTION = "skeleton_log";
+	public static final String BEANCRUMBS_LOG_LEVEL_OPTION = "skeleton_log_level";
+	public static final String BEANCRUMBS_ENABLED_OPTION = "skeleton_enabled";
 	
 	
 	private File dir;

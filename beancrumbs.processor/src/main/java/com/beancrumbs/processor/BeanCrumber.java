@@ -67,13 +67,13 @@ import com.beancrumbs.utils.PathUtils;
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedOptions({Options.BEANCRUMBS_DIR_OPTION, Options.BEANCRUMBS_LOG_OPTION, Options.BEANCRUMBS_LOG_LEVEL_OPTION, Options.BEANCRUMBS_ENABLED_OPTION})
 public class BeanCrumber extends AbstractProcessor {
-	private final static String CLASS_ANNOTATION_PROP = "class.annotation";
-	private final static String CLASS_REGEX_PROP = "class.regex";
-	private final static String CLASS_WILDCARD_PROP = "class.wildcard";
-	private final static String GENERATED_SRC_DIR_PROP = "generated.src.dir";
-	private final static String GENERATED_SRC_PROJECT_PROP = "generated.src.project";
+	private static final String CLASS_ANNOTATION_PROP = "class.annotation";
+	private static final String CLASS_REGEX_PROP = "class.regex";
+	private static final String CLASS_WILDCARD_PROP = "class.wildcard";
+	private static final String GENERATED_SRC_DIR_PROP = "generated.src.dir";
+	private static final String GENERATED_SRC_PROJECT_PROP = "generated.src.project";
 
-	public final static String MAX_NESTING = "max.nesting";
+	public static final String MAX_NESTING = "max.nesting";
 	
 	private static enum Config {
 		PROPERTIES,
@@ -96,10 +96,10 @@ public class BeanCrumber extends AbstractProcessor {
 	private Iterable<CrumbsWay> ways = null;
 	private ClassLoader projectClassLoader;
 	
-	private final static int MAX_FS_SEARCH_DEPTH = 4;
+	private static final int MAX_FS_SEARCH_DEPTH = 4;
 	
 
-	private final static Logger logger = Logger.getLogger(BeanCrumber.class .getName()); 
+	private static final Logger logger = Logger.getLogger(BeanCrumber.class .getName()); 
 	
 	public BeanCrumber() {
 		logger.info("BeanCrumber is created cwd=" + new File(".").getAbsolutePath());

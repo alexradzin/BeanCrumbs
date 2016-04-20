@@ -15,11 +15,11 @@ import java.util.logging.Logger;
  * @param <M>
  */
 public abstract class BeanParser<E, T, M> {
-	private final static Logger logger = Logger.getLogger(BeanParser.class.getName()); 
+	private static final Logger logger = Logger.getLogger(BeanParser.class.getName()); 
 	private BeansMetadata metadata; 
 	
 	
-	private final static Map<String, Class<?>> primitives = new HashMap<String, Class<?>>();
+	private static final Map<String, Class<?>> primitives = new HashMap<String, Class<?>>();
 	static {
 		for (Class<?> c : new Class[] {short.class, int.class, long.class, byte.class, boolean.class, float.class, double.class}) {
 			primitives.put(c.getName(), c);

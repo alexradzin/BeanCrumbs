@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * Marker annotation that can be used to mark source classes for creating of 
  * skeletons. 
  * 
- * Skeleton is a class that contains {@code public final static String} fields
+ * Skeleton is a class that contains {@code public static final String} fields
  * for each property of source bean. 
  * For example skeleton for bean called {@code Person} has to properties:
  *  
@@ -22,8 +22,8 @@ import java.lang.annotation.Target;
  * will be called {@code PersonSkeleton}:
  * <pre><code>
  * public class PersonSkeleton {
- * 		public final static String name = "name";
- * 		public final static String age = "age";
+ * 		public static final String name = "name";
+ * 		public static final String age = "age";
  * }
  * </code></pre> 
  * 

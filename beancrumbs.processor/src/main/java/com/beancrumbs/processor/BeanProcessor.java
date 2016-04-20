@@ -23,7 +23,7 @@ import javax.lang.model.type.TypeMirror;
  *
  */
 public abstract class BeanProcessor extends BeanParser<Element, TypeElement, ExecutableElement> {
-	private final static Logger logger = Logger.getLogger(BeanProcessor.class.getName()); 
+	private static final Logger logger = Logger.getLogger(BeanProcessor.class.getName()); 
 	
 	@Override
 	protected Set<? extends TypeElement> getTypes() {
