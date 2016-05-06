@@ -1,10 +1,12 @@
 package com.beancrumbs.function;
 
+import static com.beancrumbs.utils.ParsingUtils.isJavaLang;
+import static com.beancrumbs.utils.ParsingUtils.isPrimitive;
+
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -12,6 +14,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import com.beancrumbs.common.HandlerConf;
+import com.beancrumbs.nullsafe.NullSafeAccess;
 import com.beancrumbs.processor.BeanProperty;
 import com.beancrumbs.processor.BeansMetadata;
 import com.beancrumbs.processor.Crumbed;
@@ -23,19 +26,6 @@ public class FunctionWriter implements CrumbsWay {
 	private static final Logger logger = Logger.getLogger(SkeletonWriter.class .getName());
 	
 	static final String IMPORT = "import"; 
-	
-	private static final Map<String, String> primitiveWrappers = new HashMap<>();
-	static {
-		@SuppressWarnings("rawtypes")
-		Class[] primitives = {byte.class, short.class, long.class, float.class, double.class, boolean.class};
-		for (@SuppressWarnings("rawtypes") Class primitive : primitives) {
-			String name = primitive.getName();
-			primitiveWrappers.put(name, ParsingUtils.firstToUpperCase(name));
-		}
-		primitiveWrappers.put(int.class.getName(), Integer.class.getName());
-		primitiveWrappers.put(char.class.getName(), Character.class.getName());
-	}
-	
 
 	
 	@Override
@@ -70,6 +60,8 @@ public class FunctionWriter implements CrumbsWay {
 			return;
 		}
 		Collection<String> imports = new HashSet<>();
+		imports.add(Crumbed.class.getName());
+		imports.add(NullSafeAccess.class.getName());
 		for(BeanProperty property : data.getBeanMetadata(fullClassName).getProperties().values()) {
 			String typeName = property.getTypeName();
 			if(property.isReadable()) {
@@ -77,10 +69,14 @@ public class FunctionWriter implements CrumbsWay {
 			} else {
 				imports.add(conf.getGetter().getParentClassName());
 			}
-			if (primitiveWrappers.containsKey(typeName) || ParsingUtils.isJavaLang(typeName)) {
+			if (isPrimitive(typeName) || isJavaLang(typeName)) {
 				continue;
 			}
-			imports.add(ParsingUtils.pureClassName(typeName));
+			for (String type : ParsingUtils.componentClassNames(typeName)) {
+				if (!ParsingUtils.isJavaLang(typeName)) {
+					imports.add(ParsingUtils.pureClassName(type));
+				}
+			}
 		}
 		for (String imp : imports) {
 			pw.println(String.format("import %s;", imp));
@@ -92,7 +88,7 @@ public class FunctionWriter implements CrumbsWay {
 	
 	
 	private void writeFunctions(String fullClassName, String simpleName, BeansMetadata data, ClassWritingConf conf, PrintWriter pw) {
-		pw.println("@" + Crumbed.class.getName() + "(" + PropertyFuction.class.getName() + ".class" + ")");
+		pw.println("@" + (conf.isImportReferences() ? Crumbed.class.getSimpleName() : Crumbed.class.getName()) + "(" + (conf.isImportReferences() ? NullSafeAccess.class.getSimpleName() : NullSafeAccess.class.getName()) + ".class" + ")");
 		pw.println("public class " + getClassName(simpleName) + " {");
 		Map<String, BeanProperty> properties = data.getBeanMetadata(fullClassName).getProperties();
 		for(BeanProperty property : properties.values()) {

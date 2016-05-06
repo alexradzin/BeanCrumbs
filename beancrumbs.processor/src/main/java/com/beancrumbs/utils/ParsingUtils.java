@@ -1,8 +1,11 @@
 package com.beancrumbs.utils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ParsingUtils {
@@ -17,7 +20,8 @@ public class ParsingUtils {
 		primitiveWrappers.put(int.class.getName(), Integer.class.getName());
 		primitiveWrappers.put(char.class.getName(), Character.class.getName());
 	}
-	
+
+	private static final Pattern genericTypeSeparator = Pattern.compile("\\s*[<>,]\\s*");
 	
 	
 	public static Pattern wildcardToPattern(String wildcard) {
@@ -65,6 +69,11 @@ public class ParsingUtils {
 		return posLt > 0 ? className.substring(0, posLt) : className;
 	}
 	
+	public static String[] componentClassNames(String className) {
+		return genericTypeSeparator.split(className);
+	}
+	
+	
 	public static String firstToLowerCase(String str) {
 		if (str == null || str.length() == 0) {
 			return str;
@@ -84,16 +93,61 @@ public class ParsingUtils {
 	public static String canoninize(String type, boolean writeSimpleClassName) {
 		String wrapper = primitiveWrappers.get(type);
 		String canonicalType = wrapper == null ? type : wrapper;
-		return writeSimpleClassName || isJavaLang(canonicalType) ? ParsingUtils.splitClassName(canonicalType).getValue()
+		return writeSimpleClassName || isJavaLang(canonicalType) ? ParsingUtils.simpleClassName(canonicalType)
 				: canonicalType;
 	}
 
-	public static String shortClassName(String type) {
-		return primitiveWrappers.containsKey(type) ? type : ParsingUtils.splitClassName(type).getValue();
+	public static String simpleClassName(String type) {
+		if (isPrimitive(type)) {
+			return type;
+		}
+		
+		
+		String[] parts = splitIncludeDelimeter(genericTypeSeparator, type);
+		StringBuilder result = new StringBuilder();
+		for (String part : parts) {
+			if ("".equals(part) || genericTypeSeparator.matcher(part).matches()) {
+				result.append(part);
+			} else {
+				String simpleClassName = isPrimitive(part) ? type : ParsingUtils.splitClassName(part).getValue();
+				result.append(simpleClassName);
+			}
+		}
+		return result.toString();
 	}
 
+	
+	
+
+	private static String[] splitIncludeDelimeter(Pattern pattern, String text) {
+		List<String> list = new ArrayList<>();
+		Matcher matcher = pattern.matcher(text);
+
+		int now, old = 0;
+		while (matcher.find()) {
+			now = matcher.end();
+			list.add(text.substring(old, now - 1));
+			list.add(text.substring(now - 1, now));
+			//System.out.println(list);
+			old = now;
+		}
+
+		if (list.size() == 0)
+			return new String[] { text };
+
+		// adding rest of a text as last element
+		String finalElement = text.substring(old);
+		list.add(finalElement);
+
+		return list.toArray(new String[list.size()]);
+	}	
+	
+	
 	public static boolean isJavaLang(String fullyQalifiedClassName) {
 		return fullyQalifiedClassName.startsWith("java.lang");
 	}
 	
+	public static boolean isPrimitive(String fullyQalifiedClassName) {
+		return primitiveWrappers.containsKey(fullyQalifiedClassName);
+	}
 }

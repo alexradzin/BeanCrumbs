@@ -18,7 +18,7 @@ enum HandlerRole implements SourceCodeGenerator {
 		public String getCode(String simpleClassName, BeanProperty property, ClassWritingConf conf) {
 			String typeName = property.getTypeName();
 			return String.format(codeTemplate(), //conf.getGetter().getSourceCodeGenerator().codeTemplate(),
-					simpleClassName, 
+					ParsingUtils.canoninize(simpleClassName, conf.isImportReferences()),
 					ParsingUtils.canoninize(typeName, conf.isImportReferences()), 
 					ParsingUtils.firstToLowerCase(simpleClassName),
 					property.getGetterName(),
@@ -31,7 +31,7 @@ enum HandlerRole implements SourceCodeGenerator {
 	},
 	// 1: object type, 2: property type, 3: object parameter name, 4: getter name, 5: property parameter name, 6: setter name, 7: real property type, 8: parent, 9: method access modifier, 10: method  
 	SETTER(
-			"	public static final Function<%1$s, %2$s> %5$s(final %7$s %5$s) {%n" + 
+			"	public static final %8$s<%1$s, %2$s> %5$s(final %7$s %5$s) {%n" + 
 			"		return new %8$s<%1$s, %2$s>() {%n" + 
 			"			@Override%n" + 
 			"			%9$s %2$s %10$s(%1$s %3$s) {%n" + 
@@ -45,14 +45,15 @@ enum HandlerRole implements SourceCodeGenerator {
 		
 		public String getCode(String simpleClassName, BeanProperty property, ClassWritingConf conf) {
 			String typeName = property.getTypeName();
+			String cononicalTypeName = ParsingUtils.canoninize(typeName, conf.isImportReferences());
 			return String.format(codeTemplate(), //conf.getSetter().getSourceCodeGenerator().codeTemplate(),
-					simpleClassName, 
-					ParsingUtils.canoninize(typeName, conf.isImportReferences()), 
+					ParsingUtils.canoninize(simpleClassName, conf.isImportReferences()),
+					cononicalTypeName, 
 					ParsingUtils.firstToLowerCase(simpleClassName), 
 					property.getGetterName(),
 					property.getName(),
 					property.getSetterName(), 
-					ParsingUtils.shortClassName(typeName), 
+					cononicalTypeName, 
 					ParsingUtils.canoninize(conf.getSetter().getParentClassName(), conf.isImportReferences()),
 					conf.getSetter().getMethodModifier(),
 					conf.getSetter().getMethod()
@@ -72,7 +73,7 @@ enum HandlerRole implements SourceCodeGenerator {
 		
 		public String getCode(String simpleClassName, BeanProperty property, ClassWritingConf conf) {
 			return String.format(codeTemplate(), //conf.getPredicate().getSourceCodeGenerator().codeTemplate(), 					
-					simpleClassName, 
+					ParsingUtils.canoninize(simpleClassName, conf.isImportReferences()),
 					ParsingUtils.firstToLowerCase(simpleClassName),
 					property.getGetterName(),
 					property.getName(),
