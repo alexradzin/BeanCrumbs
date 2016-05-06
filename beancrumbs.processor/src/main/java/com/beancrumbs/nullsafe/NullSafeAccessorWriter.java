@@ -3,13 +3,11 @@ package com.beancrumbs.nullsafe;
 import static com.beancrumbs.utils.ParsingUtils.componentClassNames;
 import static com.beancrumbs.utils.ParsingUtils.isJavaLang;
 import static com.beancrumbs.utils.ParsingUtils.pureClassName;
-import static com.beancrumbs.utils.ParsingUtils.simpleClassName;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,24 +19,12 @@ import com.beancrumbs.processor.BeanProperty;
 import com.beancrumbs.processor.BeansMetadata;
 import com.beancrumbs.processor.Crumbed;
 import com.beancrumbs.processor.CrumbsWay;
-import com.beancrumbs.skeleton.SkeletonWriter;
 import com.beancrumbs.utils.ParsingUtils;
 
 public class NullSafeAccessorWriter implements CrumbsWay {
 	static final String IMPORT = "import";
-	private static final Logger logger = Logger.getLogger(SkeletonWriter.class.getName());
+	private static final Logger logger = Logger.getLogger(NullSafeAccessorWriter.class.getName());
 	private static final String CLASS_NAME_SUFFIX = "NullSafeAccessor";
-	private static final Map<String, String> defaultValuesPerType = new HashMap<>();
-	static {
-		defaultValuesPerType.put("byte", "0");
-		defaultValuesPerType.put("char", "0");
-		defaultValuesPerType.put("short", "0");
-		defaultValuesPerType.put("int", "0");
-		defaultValuesPerType.put("long", "0L");
-		defaultValuesPerType.put("float", "0.0f");
-		defaultValuesPerType.put("double", "0.0");
-		defaultValuesPerType.put("boolean", "false");
-	}
 
 	@Override
 	public boolean strew(String fullClassName, BeansMetadata data, OutputStream out, Properties props) {
@@ -102,9 +88,9 @@ public class NullSafeAccessorWriter implements CrumbsWay {
 		final String accessorClassName = getAccessorClassName(simpleName);
 		pw.println("public class " + accessorClassName + " extends " + simpleName + " {");
 		pw.println("	private final " + simpleName + " instance;");
-		pw.println("	public " + accessorClassName + "(" + simpleName + " instance" + ")" + " {");
-		pw.println("		this.instance = instance;");
-		pw.println("	}");
+		pw.println(NullSafeAccessorHandler.CONSTRUCTOR.getCode(simpleName, data, null, conf));
+		
+		
 		BeanMetadata context = data.getBeanMetadata(name);
 		writeProperties(context.getProperties(), data, conf, pw);
 		pw.println("}");
@@ -116,29 +102,7 @@ public class NullSafeAccessorWriter implements CrumbsWay {
 			if (!entry.getValue().isReadable()) {
 				continue;
 			}
-			String type = entry.getValue().getTypeName();
-
-			String fieldName = entry.getKey();
-			logger.info("Writing null-safe accessible property: " + type + " " + fieldName);
-
-			String getterName = (boolean.class.getSimpleName().equals(type) ? "is" : "get")
-					+ fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-
-			String defaultValue = getDefaultValue(type);
-			String directAccessExpression = "instance == null ? " + defaultValue + " : instance." + getterName + "()";
-			String accessExpression = directAccessExpression;
-			if (data.getBeanMetadata(type) != null) {
-				String typeAccessor = getAccessorClassName(type);
-				// accessExpression = directAccessExpression + " == null ? new "
-				// + typeAccessor + "() : " + directAccessExpression;
-				accessExpression = "new " + typeAccessor + "(" + directAccessExpression + ")";
-			}
-
-			String returnType = conf.isImportReferences() ? simpleClassName(type) : type;
-			pw.println("	@" + Override.class.getSimpleName());
-			pw.println("	public " + returnType + " " + getterName + "() {");
-			pw.println("		return " + accessExpression + ";");
-			pw.println("	}");
+			pw.println(NullSafeAccessorHandler.ACCESSOR.getCode(null, data, entry.getValue(), conf));
 		}
 	}
 
@@ -155,10 +119,6 @@ public class NullSafeAccessorWriter implements CrumbsWay {
 	@Override
 	public String getClassName(String originalClassName) {
 		return originalClassName + CLASS_NAME_SUFFIX;
-	}
-
-	private String getDefaultValue(String typeName) {
-		return defaultValuesPerType.get(typeName);
 	}
 
 	static String getAccessorClassName(String beanClassName) {

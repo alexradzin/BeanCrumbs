@@ -1,8 +1,8 @@
 package com.beancrumbs.common;
 
-import com.beancrumbs.function.ClassWritingConf;
 import com.beancrumbs.processor.BeanProperty;
+import com.beancrumbs.processor.BeansMetadata;
 
-public interface SourceCodeGenerator {
-	public String getCode(String simpleClassName, BeanProperty property, ClassWritingConf conf);
+public interface SourceCodeGenerator<C extends ClassWritingConf> {
+	public String getCode(String simpleClassName, BeansMetadata data, BeanProperty property, C conf);
 }

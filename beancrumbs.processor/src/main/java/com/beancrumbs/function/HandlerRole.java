@@ -2,9 +2,10 @@ package com.beancrumbs.function;
 
 import com.beancrumbs.common.SourceCodeGenerator;
 import com.beancrumbs.processor.BeanProperty;
+import com.beancrumbs.processor.BeansMetadata;
 import com.beancrumbs.utils.ParsingUtils;
 
-enum HandlerRole implements SourceCodeGenerator {
+enum HandlerRole implements SourceCodeGenerator<BeanWritingConf> {
 	// 1: object type, 2: canonical property type, 3: object parameter name, 4: getter name, 5: property name, 6: parent, 7: method access modifier, 8: method
 	GETTER(
 			"	public static final %6$s<%1$s, %2$s> %5$s = new %6$s<%1$s, %2$s>() {%n" + 
@@ -15,7 +16,8 @@ enum HandlerRole implements SourceCodeGenerator {
 			"	};%n" 
 			) {
 		
-		public String getCode(String simpleClassName, BeanProperty property, ClassWritingConf conf) {
+		@Override
+		public String getCode(String simpleClassName, BeansMetadata data, BeanProperty property, BeanWritingConf conf) {
 			String typeName = property.getTypeName();
 			return String.format(codeTemplate(), //conf.getGetter().getSourceCodeGenerator().codeTemplate(),
 					ParsingUtils.canoninize(simpleClassName, conf.isImportReferences()),
@@ -43,7 +45,8 @@ enum HandlerRole implements SourceCodeGenerator {
 			"	}%n" 
 			) {
 		
-		public String getCode(String simpleClassName, BeanProperty property, ClassWritingConf conf) {
+		@Override
+		public String getCode(String simpleClassName, BeansMetadata data, BeanProperty property, BeanWritingConf conf) {
 			String typeName = property.getTypeName();
 			String cononicalTypeName = ParsingUtils.canoninize(typeName, conf.isImportReferences());
 			return String.format(codeTemplate(), //conf.getSetter().getSourceCodeGenerator().codeTemplate(),
@@ -70,8 +73,8 @@ enum HandlerRole implements SourceCodeGenerator {
 			"		}%n" + 
 			"	};%n" 
 	) {
-		
-		public String getCode(String simpleClassName, BeanProperty property, ClassWritingConf conf) {
+		@Override
+		public String getCode(String simpleClassName, BeansMetadata data, BeanProperty property, BeanWritingConf conf) {
 			return String.format(codeTemplate(), //conf.getPredicate().getSourceCodeGenerator().codeTemplate(), 					
 					ParsingUtils.canoninize(simpleClassName, conf.isImportReferences()),
 					ParsingUtils.firstToLowerCase(simpleClassName),

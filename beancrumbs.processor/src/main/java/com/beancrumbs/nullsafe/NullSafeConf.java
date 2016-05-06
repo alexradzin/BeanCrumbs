@@ -2,14 +2,21 @@ package com.beancrumbs.nullsafe;
 
 import java.util.Properties;
 
-public class NullSafeConf {
-	private boolean importReferences;
+import com.beancrumbs.common.AccessModifier;
+import com.beancrumbs.common.ClassWritingConf;
+import com.beancrumbs.common.HandlerConf;
+
+public class NullSafeConf extends ClassWritingConf {
+	private final HandlerConf accessor;
 	
-	NullSafeConf(Properties props) {
-		importReferences = Boolean.parseBoolean(props.getProperty(NullSafeAccessorWriter.IMPORT, "true"));
+	
+	public NullSafeConf(Properties props) {
+		super(props);
+		accessor = new HandlerConf(null, AccessModifier.PUBLIC, null, NullSafeAccessorHandler.ACCESSOR);
 	}
 
-	public boolean isImportReferences() {
-		return importReferences;
+	public HandlerConf getAccessor() {
+		return accessor;
 	}
+	
 }

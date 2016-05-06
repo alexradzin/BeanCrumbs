@@ -30,7 +30,7 @@ public class FunctionWriter implements CrumbsWay {
 	
 	@Override
 	public boolean strew(String fullClassName, BeansMetadata data, OutputStream out, Properties props) {
-		ClassWritingConf conf = new ClassWritingConf(props);
+		BeanWritingConf conf = new BeanWritingConf(props);
 		if (!conf.isValid()) {
 			return false;
 		}
@@ -55,7 +55,7 @@ public class FunctionWriter implements CrumbsWay {
 	}
 	
 	
-	private void writeImports(String fullClassName, BeansMetadata data, ClassWritingConf conf, PrintWriter pw) {
+	private void writeImports(String fullClassName, BeansMetadata data, BeanWritingConf conf, PrintWriter pw) {
 		if (!conf.isImportReferences()) {
 			return;
 		}
@@ -87,32 +87,32 @@ public class FunctionWriter implements CrumbsWay {
 	}
 	
 	
-	private void writeFunctions(String fullClassName, String simpleName, BeansMetadata data, ClassWritingConf conf, PrintWriter pw) {
+	private void writeFunctions(String fullClassName, String simpleName, BeansMetadata data, BeanWritingConf conf, PrintWriter pw) {
 		pw.println("@" + (conf.isImportReferences() ? Crumbed.class.getSimpleName() : Crumbed.class.getName()) + "(" + (conf.isImportReferences() ? NullSafeAccess.class.getSimpleName() : NullSafeAccess.class.getName()) + ".class" + ")");
 		pw.println("public class " + getClassName(simpleName) + " {");
 		Map<String, BeanProperty> properties = data.getBeanMetadata(fullClassName).getProperties();
 		for(BeanProperty property : properties.values()) {
-			writePropertyFunctions(simpleName, property, conf, pw);
+			writePropertyFunctions(simpleName, data, property, conf, pw);
 		}
 		pw.println("}");
 		pw.flush();
 	}
 	
 	
-	private void writePropertyFunctions(String simpleClassName, BeanProperty property, ClassWritingConf conf, PrintWriter pw) {
+	private void writePropertyFunctions(String simpleClassName, BeansMetadata data, BeanProperty property, BeanWritingConf conf, PrintWriter pw) {
 		if (property.isReadable()) {
 			String typeName = property.getTypeName();
 			HandlerConf handlerConf = isBoolean(typeName) ? conf.getPredicate() : conf.getGetter();
-			writePropertyFunction(simpleClassName, property, conf, pw, handlerConf);
+			writePropertyFunction(simpleClassName, data, property, conf, pw, handlerConf);
 		}
 		if (property.isWritable()) {
-			writePropertyFunction(simpleClassName, property, conf, pw, conf.getSetter());
+			writePropertyFunction(simpleClassName, data, property, conf, pw, conf.getSetter());
 		}
 	}
 	
 	
-	private void writePropertyFunction(String simpleClassName, BeanProperty property, ClassWritingConf conf, PrintWriter pw, HandlerConf handlerConf) {
-		pw.println(handlerConf.getSourceCodeGenerator().getCode(simpleClassName, property, conf));
+	private void writePropertyFunction(String simpleClassName, BeansMetadata data, BeanProperty property, BeanWritingConf conf, PrintWriter pw, HandlerConf handlerConf) {
+		pw.println(handlerConf.getSourceCodeGenerator().getCode(simpleClassName, data, property, conf));
 		pw.flush();
 	}
 
