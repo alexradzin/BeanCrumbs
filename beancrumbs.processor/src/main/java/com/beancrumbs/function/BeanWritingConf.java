@@ -5,7 +5,6 @@ import java.util.regex.Pattern;
 
 import com.beancrumbs.common.AccessModifier;
 import com.beancrumbs.common.ClassWritingConf;
-import com.beancrumbs.common.HandlerConf;
 
 public class BeanWritingConf extends ClassWritingConf {
 	private static final Pattern WHITESPACE = Pattern.compile("\\s+");

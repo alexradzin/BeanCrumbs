@@ -13,7 +13,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import com.beancrumbs.common.HandlerConf;
 import com.beancrumbs.nullsafe.NullSafeAccess;
 import com.beancrumbs.processor.BeanProperty;
 import com.beancrumbs.processor.BeansMetadata;

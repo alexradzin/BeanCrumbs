@@ -92,17 +92,17 @@ public class NullSafeAccessorWriter implements CrumbsWay {
 		
 		
 		BeanMetadata context = data.getBeanMetadata(name);
-		writeProperties(context.getProperties(), data, conf, pw);
+		writeProperties(simpleName, context.getProperties(), data, conf, pw);
 		pw.println("}");
 		pw.flush();
 	}
 
-	private void writeProperties(Map<String, BeanProperty> properties, BeansMetadata data, NullSafeConf conf, PrintWriter pw) {
+	private void writeProperties(String simpleName, Map<String, BeanProperty> properties, BeansMetadata data, NullSafeConf conf, PrintWriter pw) {
 		for (Map.Entry<String, BeanProperty> entry : properties.entrySet()) {
 			if (!entry.getValue().isReadable()) {
 				continue;
 			}
-			pw.println(NullSafeAccessorHandler.ACCESSOR.getCode(null, data, entry.getValue(), conf));
+			pw.println(NullSafeAccessorHandler.ACCESSOR.getCode(simpleName, data, entry.getValue(), conf));
 		}
 	}
 

@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import com.beancrumbs.common.SourceCodeGenerator;
 import com.beancrumbs.processor.BeanProperty;
 import com.beancrumbs.processor.BeansMetadata;
+import com.beancrumbs.utils.ParsingUtils;
 
 public enum NullSafeAccessorHandler implements SourceCodeGenerator<NullSafeConf> {
 	CONSTRUCTOR(
@@ -42,13 +43,21 @@ public enum NullSafeAccessorHandler implements SourceCodeGenerator<NullSafeConf>
 			String accessExpression = directAccessExpression;
 			if (data.getBeanMetadata(type) != null) {
 				String typeAccessor = getAccessorClassName(type);
+				if (conf.isImportReferences()) {
+					typeAccessor = ParsingUtils.simpleClassName(typeAccessor);
+				}
 				// accessExpression = directAccessExpression + " == null ? new "
 				// + typeAccessor + "() : " + directAccessExpression;
 				accessExpression = "new " + typeAccessor + "(" + directAccessExpression + ")";
 			}
-			
+
+			String typeName = property.getTypeName();
+			if (conf.isImportReferences()) {
+				typeName = ParsingUtils.simpleClassName(typeName);
+			}
+
 			return String.format(codeTemplate(), 
-					property.getTypeName(), 
+					typeName,
 					property.getGetterName(),
 					accessExpression
 			);
