@@ -1,9 +1,12 @@
 package com.beancrumbs.utils;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Assert;
 import org.junit.Test;
 
 
-import junit.framework.Assert;
 
 public class ParsingUtilsTest {
 	@Test
@@ -69,14 +72,42 @@ public class ParsingUtilsTest {
 		canonizeClassName("com.google.common.base.Function<com.beanpath.poc.User, java.util.Set<com.beanpath.poc.UserRole>>", "Function<User, Set<UserRole>>");
 	}
 	
+	@Test
+	public void primitiveTypeDefinitionParts() {
+		typeDefinitionParts("boolean", new String[] {"boolean"});
+	}
+
+	@Test
+	public void collectionWithoutGenericsTypeDefinitionParts() {
+		typeDefinitionParts("List", new String[] {"List"});
+	}
+	
+	@Test
+	public void collectionWithPackageWithoutGenericsTypeDefinitionParts() {
+		typeDefinitionParts("java.util.Collection", new String[] {"java.util.Collection"});
+	}
+
+	@Test
+	public void collectionWithGenericsWithoutGenericsTypeDefinitionParts() {
+		typeDefinitionParts("Set<String>", new String[] {"Set", "String"});
+	}
+
+	@Test
+	public void collectionWithPackageWithGenericsWithoutGenericsTypeDefinitionParts() {
+		typeDefinitionParts("java.util.List<Integer>", new String[] {"java.util.List", "Integer"});
+	}
+	
 	
 	private void simpleClassName(String in, String out) {
 		Assert.assertEquals(out, ParsingUtils.simpleClassName(in));
 	}
 	
 	private void canonizeClassName(String in, String out) {
-		Assert.assertEquals(in, ParsingUtils.canoninize(in, false));
-		Assert.assertEquals(out, ParsingUtils.canoninize(in, true));
+		assertEquals(in, ParsingUtils.canoninize(in, false));
+		assertEquals(out, ParsingUtils.canoninize(in, true));
 	}
-	
+
+	private void typeDefinitionParts(String in, String[] out) {
+		assertArrayEquals(out, ParsingUtils.typeDefinitionParts(in));
+	}
 }

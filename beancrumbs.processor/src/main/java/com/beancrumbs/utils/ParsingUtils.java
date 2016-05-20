@@ -22,6 +22,7 @@ public class ParsingUtils {
 	}
 
 	private static final Pattern genericTypeSeparator = Pattern.compile("\\s*[<>,]\\s*");
+	private static final Pattern genericTypePattern = Pattern.compile("([^<]+)(?:<([^>]+)>)?");
 	
 	
 	public static Pattern wildcardToPattern(String wildcard) {
@@ -64,8 +65,25 @@ public class ParsingUtils {
 		};
 	}
 	
+	public static String pureElementClassName(String className) {
+		return pureClassName(pureClassName(className, '<'), '[');
+	}
+
 	public static String pureClassName(String className) {
-		int posLt = className.indexOf('<');
+		boolean array = false;
+		if (isArray(className)) {
+			className = className.substring(0, className.length() - 2);
+			array = true;
+		}
+		String pureClassName = pureClassName(className, '<');
+		if (array) {
+			pureClassName += "[]";
+		}
+		return pureClassName;
+	}
+
+	private static String pureClassName(String className, char c) {
+		int posLt = className.indexOf(c);
 		return posLt > 0 ? className.substring(0, posLt) : className;
 	}
 	
@@ -149,5 +167,17 @@ public class ParsingUtils {
 	
 	public static boolean isPrimitive(String fullyQalifiedClassName) {
 		return primitiveWrappers.containsKey(fullyQalifiedClassName);
+	}
+	
+	public static String[] typeDefinitionParts(String type) {
+		Matcher m = genericTypePattern.matcher(type);
+		if (!m.matches()) {
+			throw new IllegalArgumentException(type);
+		}
+		return m.group(2) == null ? new String[] {m.group(1)} : new String[] {m.group(1), m.group(2)}; 
+	}
+	
+	public static boolean isArray(String type) {
+		return type.endsWith("[]");
 	}
 }

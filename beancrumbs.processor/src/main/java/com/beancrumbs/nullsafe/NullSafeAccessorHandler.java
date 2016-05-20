@@ -1,7 +1,13 @@
 package com.beancrumbs.nullsafe;
 
-import java.util.HashMap;
-import java.util.Map;
+import static com.beancrumbs.nullsafe.DefaultValueGenerator.isContainer;
+import static com.beancrumbs.utils.ParsingUtils.isArray;
+import static com.beancrumbs.utils.ParsingUtils.pureClassName;
+import static java.lang.String.format;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.logging.Logger;
 
 import com.beancrumbs.common.SourceCodeGenerator;
@@ -23,10 +29,12 @@ public enum NullSafeAccessorHandler implements SourceCodeGenerator<NullSafeConf>
 	ACCESSOR(
 			"	@Override%n" + 
 			"	public %1$s %2$s() {%n" + 
-			"		return %3$s;%n" + 
+			"		%3$s%n" + 
 			"	}%n" + 
 			""
 		) {
+
+		
 		@Override
 		public String getCode(String simpleClassName, BeansMetadata data, BeanProperty property, NullSafeConf conf) {
 			String type = property.getTypeName();
@@ -38,8 +46,27 @@ public enum NullSafeAccessorHandler implements SourceCodeGenerator<NullSafeConf>
 			String getterName = (boolean.class.getSimpleName().equals(type) ? "is" : "get")
 					+ fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
 
-			String defaultValue = getDefaultValue(type);
-			String directAccessExpression = "instance == null ? " + defaultValue + " : instance." + getterName + "()";
+			String defaultValue = DefaultValueGenerator.getDefaultValue(type, conf.isImportReferences());
+			String typeName = property.getTypeName();
+			AccessLine line = AccessLine.getAccessLine(pureClassName(typeName));
+			try {
+				PrintWriter pw = new PrintWriter(new FileOutputStream("c:/temp/import.txt", true));
+				pw.println(pureClassName(typeName) + "->" + line);
+				pw.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
+			if (conf.isImportReferences()) {
+				typeName = ParsingUtils.simpleClassName(typeName);
+			}
+		
+			
+			
+			
+			String directAccessExpression = format(line.codeTemplate(), defaultValue, getterName, typeName);
+			
+			
 			String accessExpression = directAccessExpression;
 			if (data.getBeanMetadata(type) != null) {
 				String typeAccessor = getAccessorClassName(type);
@@ -50,10 +77,10 @@ public enum NullSafeAccessorHandler implements SourceCodeGenerator<NullSafeConf>
 				// + typeAccessor + "() : " + directAccessExpression;
 				accessExpression = "new " + typeAccessor + "(" + directAccessExpression + ")";
 			}
+			accessExpression += ";";
 
-			String typeName = property.getTypeName();
-			if (conf.isImportReferences()) {
-				typeName = ParsingUtils.simpleClassName(typeName);
+			if (AccessLine.SCALAR.equals(line)) {
+				accessExpression = "return " + accessExpression;
 			}
 
 			return String.format(codeTemplate(), 
@@ -66,19 +93,6 @@ public enum NullSafeAccessorHandler implements SourceCodeGenerator<NullSafeConf>
 	;
 	
 	private static final Logger logger = Logger.getLogger(NullSafeAccessorWriter.class.getName());
-	private static final Map<String, String> defaultValuesPerType = new HashMap<>();
-	static {
-		defaultValuesPerType.put("byte", "0");
-		defaultValuesPerType.put("char", "0");
-		defaultValuesPerType.put("short", "0");
-		defaultValuesPerType.put("int", "0");
-		defaultValuesPerType.put("long", "0L");
-		defaultValuesPerType.put("float", "0.0f");
-		defaultValuesPerType.put("double", "0.0");
-		defaultValuesPerType.put("boolean", "false");
-		//TODO: add arrays, collections, lists, sets, maps
-	}
-	
 	private static final String CLASS_NAME_SUFFIX = "NullSafeAccessor";
 	
 	private final String codeTemplate;
@@ -91,12 +105,40 @@ public enum NullSafeAccessorHandler implements SourceCodeGenerator<NullSafeConf>
 		return codeTemplate;
 	}
 	
-	private static String getDefaultValue(String typeName) {
-		return defaultValuesPerType.get(typeName);
-	}
-
 	static String getAccessorClassName(String beanClassName) {
 		return beanClassName + CLASS_NAME_SUFFIX;
 	}
-	
+
+	enum AccessLine {
+		SCALAR("instance == null ? %1$s : instance.%2$s()"),
+		/**
+		 * Used for arrays, collections, maps etc.
+		 */
+		CONTAINER(
+				//"instance == null ? %1$s : instance.%2$s() == null ? %1$s : instance.%2$s()"
+				"if (instance == null) {%n" + 
+				"			return %1$s;%n" + 
+				"		}%n" + 
+				"		%3$s value = instance.%2$s();%n" + 
+				"		if (value == null) {%n" + 
+				"			return %1$s;%n" + 
+				"		}%n" + 
+				"		return value" 
+				
+		),
+		;
+		private String codeTemplate;
+		
+		AccessLine(String codeTemplate) {
+			this.codeTemplate = codeTemplate;
+		}
+		
+		String codeTemplate() {
+			return codeTemplate;
+		}
+		
+		static AccessLine getAccessLine(String type) {
+			return (isArray(type) || isContainer(type)) ? CONTAINER : SCALAR;
+		}
+	}
 }

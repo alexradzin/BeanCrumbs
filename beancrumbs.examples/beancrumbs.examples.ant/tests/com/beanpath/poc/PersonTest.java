@@ -1,6 +1,9 @@
 package com.beanpath.poc;
 
+import static com.beancrumbs.nullsafe.NullSafe.$;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -48,5 +51,12 @@ public class PersonTest<P extends Person> {
 		assertEquals(String.valueOf(home.getLongitude()), BeanUtils.getProperty(person, PersonSkeleton.home.longitude));
 		assertEquals(String.valueOf(home.getPobox()), BeanUtils.getProperty(person, PersonSkeleton.home.pobox));
 	}
-
+	
+	@Test
+	public void nullsafeArray() {
+		Person p = new Person();
+		assertNull(p.getPhones());
+		assertNotNull($(p).getPhones());
+		assertEquals(0, $(p).getPhones().length);
+	}
 }

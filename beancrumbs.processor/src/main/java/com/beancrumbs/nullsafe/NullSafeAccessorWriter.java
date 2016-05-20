@@ -1,8 +1,10 @@
 package com.beancrumbs.nullsafe;
 
+import static com.beancrumbs.nullsafe.DefaultValueGenerator.getImportFor;
 import static com.beancrumbs.utils.ParsingUtils.componentClassNames;
+import static com.beancrumbs.utils.ParsingUtils.isArray;
 import static com.beancrumbs.utils.ParsingUtils.isJavaLang;
-import static com.beancrumbs.utils.ParsingUtils.pureClassName;
+import static com.beancrumbs.utils.ParsingUtils.pureElementClassName;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -65,9 +67,15 @@ public class NullSafeAccessorWriter implements CrumbsWay {
 				continue;
 			}
 			
-			for (String type : componentClassNames(typeName)) {
+			String[] componentClassNames = componentClassNames(typeName);
+			for (String type : componentClassNames) {
 				if (!isJavaLang(typeName)) {
-					imports.add(pureClassName(type));
+					String className = pureElementClassName(type);
+					imports.add(className);
+					String importForDefaultValue = getImportFor(className, conf.isImportReferences());
+					if (importForDefaultValue != null) {
+						imports.add(importForDefaultValue);
+					}
 				}
 			}
 		}
@@ -102,7 +110,13 @@ public class NullSafeAccessorWriter implements CrumbsWay {
 			if (!entry.getValue().isReadable()) {
 				continue;
 			}
-			pw.println(NullSafeAccessorHandler.ACCESSOR.getCode(simpleName, data, entry.getValue(), conf));
+			
+			BeanProperty property = entry.getValue();
+			String typeName = property.getTypeName();
+			if (isArray(typeName) && typeName.contains("<")) {
+				pw.println("@SuppressWarnings(\"unchecked\")");
+			}
+			pw.println(NullSafeAccessorHandler.ACCESSOR.getCode(simpleName, data, property, conf));
 		}
 	}
 

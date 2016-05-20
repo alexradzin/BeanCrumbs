@@ -73,7 +73,7 @@ public class FunctionWriter implements CrumbsWay {
 			}
 			for (String type : ParsingUtils.componentClassNames(typeName)) {
 				if (!ParsingUtils.isJavaLang(typeName)) {
-					imports.add(ParsingUtils.pureClassName(type));
+					imports.add(ParsingUtils.pureElementClassName(type));
 				}
 			}
 		}

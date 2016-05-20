@@ -1,10 +1,13 @@
 package com.beancrumbs.poc;
 
+import static com.beancrumbs.nullsafe.NullSafe.$;
 import static com.beanpath.poc.UserFunction.enabled;
 import static com.beanpath.poc.UserFunction.name;
 import static com.beanpath.poc.UserFunction.password;
 import static com.beanpath.poc.UserFunction.roles;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.Collections;
 
@@ -38,6 +41,14 @@ public class UserTest {
 		roles(Collections.singleton(UserRole.USER)).apply(user);
 		
 		assertFunctions(user);
+	}
+	
+	@Test
+	public void nullsafeCollection() {
+		User user = new User();
+		assertNull(user.getRoles());
+		assertNotNull($(user).getRoles());
+		assertEquals(0, $(user).getRoles().size());
 	}
 
 	

@@ -10,6 +10,7 @@ public class Person {
 	private String lastName;
 	private Date bithday;
 	private Address home;
+	private Phone[] phones;
 	
 	public Address getHome() {
 		return home;
@@ -35,7 +36,12 @@ public class Person {
 	public void setBithday(Date bithday) {
 		this.bithday = bithday;
 	}
-	
+	public Phone[] getPhones() {
+		return phones;
+	}
+	public void setPhones(Phone[] phones) {
+		this.phones = phones;
+	}
 	@Override
 	public String toString() {
 		return "Person" + firstName + " " + lastName + "";
