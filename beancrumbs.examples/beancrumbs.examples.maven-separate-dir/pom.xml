@@ -34,7 +34,13 @@
 
 		<dependency>
 			<groupId>com.beancrumbs</groupId>
-			<artifactId>beancrumbs</artifactId>
+			<artifactId>beancrumbs.extensions.nullsafe</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.beancrumbs</groupId>
+			<artifactId>beancrumbs.extensions.skeleton</artifactId>
 			<version>${project.version}</version>
 		</dependency>
             		
@@ -51,14 +57,14 @@
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
-            		
+
 		<dependency>
 			<groupId>com.beancrumbs</groupId>
 			<artifactId>beancrumbs.examples.maven-separate-project-nullsafe</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
-		
+
 	</dependencies>
 
 	<build>
@@ -78,11 +84,11 @@
 				        </execution>
 				    </executions>
 				</plugin>
-								
+
 				<plugin>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.1</version>
-					
+
 					<executions>
 						<execution>
 							<id>default-compile</id>
@@ -96,7 +102,7 @@
 							</configuration>
 						</execution>
 
-						
+
 						<execution>
 							<id>crumbs-compile</id>
 							<phase>compile</phase>
@@ -115,9 +121,9 @@
 						</execution>
 					</executions>
 				</plugin>
-				
-				
-				
+
+
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-eclipse-plugin</artifactId>
@@ -127,7 +133,7 @@
 						<downloadJavadocs>true</downloadJavadocs>
 					</configuration>
 				</plugin>
-		
+
 				<plugin>
 					<artifactId>maven-clean-plugin</artifactId>
 					<version>2.5</version>
@@ -178,5 +184,5 @@
 				</plugins>
 			</pluginManagement>
 	</build>
-	
+
 </project>

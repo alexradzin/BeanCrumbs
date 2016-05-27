@@ -16,18 +16,24 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.beancrumbs</groupId>
-			<artifactId>beancrumbs</artifactId>
+			<artifactId>beancrumbs.extensions.nullsafe</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-	
-	
+
+		<dependency>
+			<groupId>com.beancrumbs</groupId>
+			<artifactId>beancrumbs.extensions.skeleton</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+
 		<dependency>
 			<groupId>commons-beanutils</groupId>
 			<artifactId>commons-beanutils</artifactId>
 			<version>1.8.3</version>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>	
+	</dependencies>
 
 
 	<build>
@@ -36,7 +42,7 @@
 		<testSourceDirectory>tests</testSourceDirectory>
 		<testOutputDirectory>classes</testOutputDirectory>
 		<plugins>
-		
+
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
@@ -101,7 +107,7 @@
 						<phase>compile</phase>
 						<configuration>
 							<tasks>
-								<!-- The following command does not work if JAVA_HOME is not defined 
+								<!-- The following command does not work if JAVA_HOME is not defined
 									correctly -->
 								<!-- <ant antfile="../beancrumbs.examples/beancrumbs.ant/build.xml"/> -->
 								<exec executable="ant" dir="." vmlauncher="false">
@@ -205,6 +211,6 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-	
+
 
 </project>

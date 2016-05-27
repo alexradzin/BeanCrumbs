@@ -19,6 +19,7 @@
 
 	<modules>
 		<module>beancrumbs.processor</module>
+		<module>beancrumbs.extensions</module>
 		<module>beancrumbs.examples</module>
 	</modules>
 

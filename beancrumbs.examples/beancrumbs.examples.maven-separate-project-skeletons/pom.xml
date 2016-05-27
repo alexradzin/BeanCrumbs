@@ -17,8 +17,8 @@
 		<javax.persistence.version>2.1.0</javax.persistence.version>
 		<commons-beanutils.version>1.8.3</commons-beanutils.version>
 	</properties>
-	
-	
+
+
 	<dependencies>
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
@@ -35,7 +35,7 @@
 
 		<dependency>
 			<groupId>com.beancrumbs</groupId>
-			<artifactId>beancrumbs</artifactId>
+			<artifactId>beancrumbs.extensions.skeleton</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
