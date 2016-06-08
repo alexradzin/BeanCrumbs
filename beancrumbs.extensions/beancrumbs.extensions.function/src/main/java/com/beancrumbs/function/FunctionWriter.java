@@ -13,27 +13,25 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import com.beancrumbs.nullsafe.NullSafeAccess;
 import com.beancrumbs.processor.BeanProperty;
 import com.beancrumbs.processor.BeansMetadata;
 import com.beancrumbs.processor.Crumbed;
 import com.beancrumbs.processor.CrumbsWay;
-import com.beancrumbs.skeleton.SkeletonWriter;
 import com.beancrumbs.utils.ParsingUtils;
 
 public class FunctionWriter implements CrumbsWay {
-	private static final Logger logger = Logger.getLogger(SkeletonWriter.class .getName());
-	
-	static final String IMPORT = "import"; 
+	private static final Logger logger = Logger.getLogger(FunctionWriter.class.getName());
 
-	
+	static final String IMPORT = "import";
+
+
 	@Override
 	public boolean strew(String fullClassName, BeansMetadata data, OutputStream out, Properties props) {
 		BeanWritingConf conf = new BeanWritingConf(props);
 		if (!conf.isValid()) {
 			return false;
 		}
-		
+
 		logger.info("Writing properties functions: " + fullClassName + " for bean " + data);
 		PrintWriter pw = new PrintWriter(out);
 
@@ -41,26 +39,26 @@ public class FunctionWriter implements CrumbsWay {
 		String packageName = nameElements.getKey();
 		String simpleName = nameElements.getValue();
 
-		
+
 		if (packageName != null && !"".equals(packageName)) {
 			pw.println("package " + packageName + ";");
 			pw.println();
 		}
-		
-		writeImports(fullClassName, data, conf, pw);	
+
+		writeImports(fullClassName, data, conf, pw);
 		writeFunctions(fullClassName, simpleName, data, conf, pw);
 		pw.flush();
 		return true;
 	}
-	
-	
+
+
 	private void writeImports(String fullClassName, BeansMetadata data, BeanWritingConf conf, PrintWriter pw) {
 		if (!conf.isImportReferences()) {
 			return;
 		}
 		Collection<String> imports = new HashSet<>();
 		imports.add(Crumbed.class.getName());
-		imports.add(NullSafeAccess.class.getName());
+		imports.add(PropertyFuction.class.getName());
 		for(BeanProperty property : data.getBeanMetadata(fullClassName).getProperties().values()) {
 			String typeName = property.getTypeName();
 			if(property.isReadable()) {
@@ -84,10 +82,10 @@ public class FunctionWriter implements CrumbsWay {
 			pw.println();
 		}
 	}
-	
-	
+
+
 	private void writeFunctions(String fullClassName, String simpleName, BeansMetadata data, BeanWritingConf conf, PrintWriter pw) {
-		pw.println("@" + (conf.isImportReferences() ? Crumbed.class.getSimpleName() : Crumbed.class.getName()) + "(" + (conf.isImportReferences() ? NullSafeAccess.class.getSimpleName() : NullSafeAccess.class.getName()) + ".class" + ")");
+		pw.println("@" + (conf.isImportReferences() ? Crumbed.class.getSimpleName() : Crumbed.class.getName()) + "(" + (conf.isImportReferences() ? PropertyFuction.class.getSimpleName() : PropertyFuction.class.getName()) + ".class" + ")");
 		pw.println("public class " + getClassName(simpleName) + " {");
 		Map<String, BeanProperty> properties = data.getBeanMetadata(fullClassName).getProperties();
 		for(BeanProperty property : properties.values()) {
@@ -96,8 +94,8 @@ public class FunctionWriter implements CrumbsWay {
 		pw.println("}");
 		pw.flush();
 	}
-	
-	
+
+
 	private void writePropertyFunctions(String simpleClassName, BeansMetadata data, BeanProperty property, BeanWritingConf conf, PrintWriter pw) {
 		if (property.isReadable()) {
 			String typeName = property.getTypeName();
@@ -108,14 +106,14 @@ public class FunctionWriter implements CrumbsWay {
 			writePropertyFunction(simpleClassName, data, property, conf, pw, conf.getSetter());
 		}
 	}
-	
-	
+
+
 	private void writePropertyFunction(String simpleClassName, BeansMetadata data, BeanProperty property, BeanWritingConf conf, PrintWriter pw, HandlerConf handlerConf) {
 		pw.println(handlerConf.getSourceCodeGenerator().getCode(simpleClassName, data, property, conf));
 		pw.flush();
 	}
 
-	
+
 	@Override
 	public Collection<String> getMarkers() {
 		return Collections.<String>singleton(PropertyFuction.class.getName());
@@ -130,7 +128,7 @@ public class FunctionWriter implements CrumbsWay {
 	public String getClassName(String originalClassName) {
 		return originalClassName + "Function";
 	}
-	
+
 	private boolean isBoolean(String type) {
 		return "boolean".equals(type);
 	}
