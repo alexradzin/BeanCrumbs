@@ -40,6 +40,13 @@
 			<artifactId>guava</artifactId>
 			<version>19.0</version>
 		</dependency>
+
+                <dependency>
+                        <groupId>com.beancrumbs</groupId>
+                        <artifactId>beancrumbs.examples.maven-separate-project-nullsafe</artifactId>
+                        <version>${project.version}</version>
+                        <scope>test</scope>
+                </dependency>
 		
 	</dependencies>
 
@@ -59,6 +66,10 @@
 					<executions>
 						<execution>
 							<id>default-compile</id>
+							<phase>compile</phase>
+							<goals>
+								<goal>compile</goal>
+							</goals>
 						</execution>
 
 						<execution>

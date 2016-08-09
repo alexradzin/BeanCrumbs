@@ -49,20 +49,9 @@ public enum NullSafeAccessorHandler implements SourceCodeGenerator<NullSafeConf>
 			String defaultValue = DefaultValueGenerator.getDefaultValue(type, conf.isImportReferences());
 			String typeName = property.getTypeName();
 			AccessLine line = AccessLine.getAccessLine(pureClassName(typeName));
-			try {
-				PrintWriter pw = new PrintWriter(new FileOutputStream("c:/temp/import.txt", true));
-				pw.println(pureClassName(typeName) + "->" + line);
-				pw.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
 			if (conf.isImportReferences()) {
 				typeName = ParsingUtils.simpleClassName(typeName);
 			}
-		
-			
-			
 			
 			String directAccessExpression = format(line.codeTemplate(), defaultValue, getterName, typeName);
 			

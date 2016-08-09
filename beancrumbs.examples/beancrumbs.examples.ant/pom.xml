@@ -91,63 +91,56 @@
 				</executions>
 			</plugin>
 
-			<plugin>
+				 <plugin>
+				    <groupId>org.codehaus.mojo</groupId>
+				    <artifactId>exec-maven-plugin</artifactId>
+				    <version>1.1.1</version>
+				    <executions>
+				      <execution>
+					<id>clean-examples</id>
+					<phase>clean</phase>
+					<goals>
+					  <goal>exec</goal>
+					</goals>
+					    <configuration>
+					      <executable>ant</executable>
+						<arguments>
+							<argument>clean</argument>
+						</arguments>
+					    </configuration>
+				      </execution>
 
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.7</version>
-				<executions>
-					<execution>
-						<id>compile-examples</id>
-						<phase>compile</phase>
-						<configuration>
-							<tasks>
-								<!-- The following command does not work if JAVA_HOME is not defined 
-									correctly -->
-								<!-- <ant antfile="../beancrumbs.examples/beancrumbs.ant/build.xml"/> -->
-								<exec executable="ant" dir="." vmlauncher="false">
-									<arg value="compile" />
-								</exec>
-							</tasks>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
+				      <execution>
+					<id>compile-examples</id>
+					<phase>compile</phase>
+					<goals>
+					  <goal>exec</goal>
+					</goals>
+					    <configuration>
+					      <executable>ant</executable>
+						<arguments>
+							<argument>compile</argument>
+						</arguments>
+					    </configuration>
+				      </execution>
 
-					<execution>
-						<id>test-examples</id>
-						<phase>test</phase>
-						<configuration>
-							<tasks>
-								<exec executable="ant" dir="." failonerror="true"  vmlauncher="false">
-									<arg value="test" />
-								</exec>
-							</tasks>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
+				      <execution>
+					<id>test-examples</id>
+					<phase>test</phase>
+					<goals>
+					  <goal>exec</goal>
+					</goals>
+					    <configuration>
+					      <executable>ant</executable>
+						<arguments>
+							<argument>test</argument>
+						</arguments>
+					    </configuration>
+				      </execution>
 
+				    </executions>
+				  </plugin>
 
-					<execution>
-						<id>clean-examples</id>
-						<phase>clean</phase>
-						<configuration>
-							<tasks>
-								<exec executable="ant" dir="."  vmlauncher="false">
-									<arg value="clean" />
-								</exec>
-							</tasks>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-
-
-				</executions>
-			</plugin>
 
 		</plugins>
 		<pluginManagement>

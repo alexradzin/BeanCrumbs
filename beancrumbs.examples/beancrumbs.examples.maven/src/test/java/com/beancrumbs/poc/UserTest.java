@@ -1,6 +1,6 @@
 package com.beancrumbs.poc;
 
-import static com.beancrumbs.nullsafe.NullSafe.$;
+//import static com.beancrumbs.nullsafe.NullSafe.$;
 import static com.beanpath.poc.UserFunction.enabled;
 import static com.beanpath.poc.UserFunction.name;
 import static com.beanpath.poc.UserFunction.password;
@@ -42,7 +42,7 @@ public class UserTest {
 		
 		assertFunctions(user);
 	}
-	
+	/*
 	@Test
 	public void nullsafeCollection() {
 		User user = new User();
@@ -50,6 +50,7 @@ public class UserTest {
 		assertNotNull($(user).getRoles());
 		assertEquals(0, $(user).getRoles().size());
 	}
+	*/
 
 	
 	private void assertFunctions(User user) {
