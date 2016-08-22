@@ -6,8 +6,6 @@ import static com.beanpath.poc.UserFunction.name;
 import static com.beanpath.poc.UserFunction.password;
 import static com.beanpath.poc.UserFunction.roles;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import java.util.Collections;
 

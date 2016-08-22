@@ -1,6 +1,7 @@
 package com.beanpath.poc;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.text.ParseException;
 import java.util.Collections;
@@ -27,7 +28,7 @@ public class ManagerTest<M extends Manager> extends EmployeeTest<M> {
 	
 	
 	@Override
-	protected void validate(M manager) throws ParseException, ReflectiveOperationException {
+	protected M validate(M manager) throws ParseException, ReflectiveOperationException {
 		// Copy-paste from PersonTest. We have to do this because this class refers to EmployeeSkeleton
 		// while PersonTest refers to PersonSkeleton
 		assertEquals(manager.getFirstName(), BeanUtils.getProperty(manager, EmployeeSkeleton.firstName));
@@ -53,12 +54,19 @@ public class ManagerTest<M extends Manager> extends EmployeeTest<M> {
 		
 		// Manager
 		assertEquals(String.valueOf("" + manager.getManagerId()), BeanUtils.getProperty(manager, ManagerSkeleton.managerId));
-		assertEquals(formatCollectionString(String.valueOf(manager.getSubordinateIds())), formatCollectionString(BeanUtils.getProperty(manager, ManagerSkeleton.subordinateIds)));
+		
+		if (manager.getSubordinateIds() == null) {
+			assertNull(BeanUtils.getProperty(manager, ManagerSkeleton.subordinateIds));
+		} else {
+			assertEquals(formatCollectionString(String.valueOf(manager.getSubordinateIds())), formatCollectionString(BeanUtils.getProperty(manager, ManagerSkeleton.subordinateIds)));
+		}
+		
+		return manager;
 	}
 
 	
 	private String formatCollectionString(String str) {
-		return str.replaceAll("[<>\\[\\]]", "");
+		return str == null ? "" : str.replaceAll("[<>\\[\\]]", "");
 	}
 	
 }

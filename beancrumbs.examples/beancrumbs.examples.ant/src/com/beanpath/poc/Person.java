@@ -12,6 +12,9 @@ public class Person {
 	private Address home;
 	private Phone[] phones;
 	
+	private Person mother;
+//	private Person father;
+	
 	public Address getHome() {
 		return home;
 	}
@@ -42,6 +45,20 @@ public class Person {
 	public void setPhones(Phone[] phones) {
 		this.phones = phones;
 	}
+	
+	
+	public Person getMother() {
+		return mother;
+	}
+	public void setMother(Person mother) {
+		this.mother = mother;
+	}
+//	public Person getFather() {
+//		return father;
+//	}
+//	public void setFather(Person father) {
+//		this.father = father;
+//	}
 	@Override
 	public String toString() {
 		return "Person" + firstName + " " + lastName + "";

@@ -26,7 +26,7 @@ public class EmployeeTest<E extends Employee> extends PersonTest<E> {
 	
 	
 	@Override
-	protected void validate(Employee employee) throws ParseException, ReflectiveOperationException {
+	protected E validate(E employee) throws ParseException, ReflectiveOperationException {
 		// Copy-paste from PersonTest. We have to do this because this class refers to EmployeeSkeleton
 		// while PersonTest refers to PersonSkeleton
 		assertEquals(employee.getFirstName(), BeanUtils.getProperty(employee, EmployeeSkeleton.firstName));
@@ -48,6 +48,8 @@ public class EmployeeTest<E extends Employee> extends PersonTest<E> {
 		
 		assertEquals(String.valueOf("" + employee.getEmployeeId()), BeanUtils.getProperty(employee, EmployeeSkeleton.employeeId));
 		assertEquals(String.valueOf("" + employee.getManagerEmployeeId()), BeanUtils.getProperty(employee, EmployeeSkeleton.managerEmployeeId));
+		
+		return employee;
 	}
 	
 }
